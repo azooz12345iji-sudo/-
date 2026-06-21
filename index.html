@@ -124,6 +124,32 @@ h1,h2,h3,h4,h5{font-family:var(--font-display); font-weight:800; letter-spacing:
 /* ============================== App Shell ============================== */
 .app-shell{display:flex; min-height:100vh;}
 
+/* ============================== شاشات الدخول والترحيب ============================== */
+.auth-screen{
+  position:fixed; inset:0; z-index:500; display:flex; align-items:center; justify-content:center;
+  background:linear-gradient(165deg,var(--c-ink-900) 0%,var(--c-ink-800) 55%,#1A1426 100%);
+  padding:24px;
+}
+.auth-card{
+  width:100%; max-width:420px; background:var(--bg-elevated); border-radius:24px;
+  padding:44px 36px; text-align:center; box-shadow:0 24px 64px rgba(0,0,0,.35);
+  animation:authIn .4s var(--ease);
+}
+@keyframes authIn{ from{opacity:0; transform:translateY(14px) scale(.98);} to{opacity:1; transform:none;} }
+.auth-logo{width:64px; height:64px; object-fit:contain; margin:0 auto 18px;}
+.auth-card h1{font-size:22px; font-weight:900; color:var(--text-primary); margin-bottom:6px;}
+.auth-card h2{font-size:19px; font-weight:800; color:var(--text-primary); margin:6px 0 26px; line-height:1.7;}
+.auth-sub{font-size:12.5px; color:var(--text-tertiary); margin-bottom:28px;}
+.auth-form{display:flex; flex-direction:column; gap:16px;}
+.auth-form label{display:flex; flex-direction:column; gap:8px; font-size:12.5px; font-weight:700; color:var(--text-secondary); text-align:right;}
+.auth-form input{padding:13px 16px; border-radius:12px; border:1px solid var(--border-default); background:var(--bg-sunken); color:var(--text-primary); font-family:inherit; font-size:14px;}
+.auth-form input:focus{outline:none; border-color:var(--c-teal-600); box-shadow:0 0 0 3px var(--c-teal-100);}
+.auth-card--greeting .auth-logo{width:72px; height:72px;}
+.sidebar__user{padding:12px 14px; border-radius:12px; background:var(--bg-sunken); margin-bottom:10px; display:flex; align-items:center; justify-content:space-between; gap:8px;}
+.sidebar__user .name{font-size:12.5px; font-weight:800; color:var(--text-primary); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+.sidebar__user button{font-size:11px; color:var(--c-teal-700); font-weight:700; flex-shrink:0; background:none; border:none; cursor:pointer; padding:4px 6px;}
+html[data-theme="dark"] .sidebar__user button{color:var(--c-teal-300);}
+
 .sidebar{
   width:280px; min-width:280px;
   background:var(--sidebar-bg);
@@ -234,6 +260,9 @@ h1,h2,h3,h4,h5{font-family:var(--font-display); font-weight:800; letter-spacing:
 html[data-theme="dark"] .badge--teal{background:rgba(86,163,161,.18); color:var(--c-teal-300);}
 
 /* ============================== Welcome / Upload ============================== */
+.welcome-greet-bar{display:flex; align-items:center; justify-content:center; gap:10px; padding:13px 20px; border-radius:14px; background:var(--c-teal-100); color:var(--c-teal-800); font-size:13.5px; font-weight:800; margin-bottom:6px;}
+.welcome-greet-bar svg{width:17px; height:17px; flex-shrink:0;}
+html[data-theme="dark"] .welcome-greet-bar{background:rgba(63,140,140,.18); color:var(--c-teal-300);}
 .hero-welcome{display:flex; flex-direction:column; align-items:center; text-align:center; padding:50px 16px 20px; position:relative;}
 .hero-diamond{width:86px; height:86px; margin-bottom:22px; position:relative;}
 .hero-welcome h1{font-size:clamp(26px,4vw,38px); background:var(--grad-brand); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; margin-bottom:10px; line-height:1.25;}
@@ -407,6 +436,42 @@ html[data-theme="dark"] .swot-card--opportunities .swot-card__ic{background:rgba
 .discovery-card--influence .ic{background:var(--c-amber-bg); color:var(--c-amber);}
 .discovery-card--theme .ic{background:var(--c-teal-100); color:var(--c-teal-700);}
 html[data-theme="dark"] .discovery-card--theme .ic{background:rgba(63,140,140,.18); color:var(--c-teal-300);}
+
+/* ============================== لوحة الترشيح الوظيفي ============================== */
+.shortlist-panel{padding:22px; margin-bottom:22px; border-top:3px solid var(--c-teal-600);}
+.shortlist-panel__head{display:flex; align-items:flex-start; gap:13px; margin-bottom:18px;}
+.shortlist-panel__head .ic{width:38px; height:38px; border-radius:11px; background:var(--c-teal-100); color:var(--c-teal-700); display:flex; align-items:center; justify-content:center; flex-shrink:0;}
+.shortlist-panel__head .ic svg{width:18px; height:18px;}
+html[data-theme="dark"] .shortlist-panel__head .ic{background:rgba(63,140,140,.18); color:var(--c-teal-300);}
+.shortlist-panel__head h4{font-size:15px; margin-bottom:3px;}
+.shortlist-panel__head p{font-size:12px; color:var(--text-tertiary);}
+.shortlist-panel__controls{display:flex; align-items:flex-end; gap:14px; flex-wrap:wrap; margin-bottom:18px; padding-bottom:18px; border-bottom:1px solid var(--border-soft);}
+.shortlist-panel__controls label{display:flex; flex-direction:column; gap:6px; font-size:12px; font-weight:700; color:var(--text-secondary); flex:1; min-width:170px;}
+.shortlist-panel__controls select, .shortlist-panel__controls input{padding:10px 12px; border-radius:10px; border:1px solid var(--border-default); background:var(--bg-elevated); color:var(--text-primary); font-family:inherit; font-size:13px;}
+.shortlist-panel__controls .btn{align-self:flex-end; white-space:nowrap;}
+
+.shortlist-summary{font-size:13px; color:var(--text-secondary); line-height:1.8; margin-bottom:16px;}
+.shortlist-cards{display:flex; flex-direction:column; gap:10px; margin-bottom:14px;}
+.shortlist-card{display:flex; align-items:flex-start; gap:13px; padding:14px 16px; border-radius:13px; background:var(--bg-sunken); border:1px solid var(--border-soft);}
+.shortlist-card .rank{font-size:20px; flex-shrink:0; width:30px; text-align:center; font-weight:900; color:var(--c-teal-700);}
+.shortlist-card p{font-size:13px; line-height:1.8; color:var(--text-primary);}
+.shortlist-card p b{color:var(--c-teal-700);}
+.shortlist-cutoff{display:flex; gap:11px; padding:14px 16px; border-radius:13px; background:var(--c-amber-bg); border-inline-start:4px solid var(--c-amber);}
+.shortlist-cutoff svg{width:18px; height:18px; flex-shrink:0; color:var(--c-amber); margin-top:1px;}
+.shortlist-cutoff p{font-size:12.5px; line-height:1.8; color:var(--text-primary);}
+.shortlist-empty{font-size:12.5px; color:var(--text-tertiary); padding:14px 0;}
+
+/* ============================== آخر العمليات ============================== */
+.op-card{display:flex; align-items:center; gap:16px; padding:18px 20px; border-radius:15px; background:var(--bg-elevated); border:1px solid var(--border-soft); margin-bottom:12px; cursor:pointer; transition:all .18s var(--ease); text-align:right;}
+.op-card:hover{border-color:var(--c-teal-600); box-shadow:var(--shadow-md); transform:translateY(-1px);}
+.op-card .ic{width:44px; height:44px; border-radius:13px; background:var(--c-teal-100); color:var(--c-teal-700); display:flex; align-items:center; justify-content:center; flex-shrink:0;}
+html[data-theme="dark"] .op-card .ic{background:rgba(63,140,140,.18); color:var(--c-teal-300);}
+.op-card .ic svg{width:20px; height:20px;}
+.op-card__body{flex:1; min-width:0;}
+.op-card__body h5{font-size:14px; font-weight:800; color:var(--text-primary); margin-bottom:4px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+.op-card__body span{font-size:12px; color:var(--text-tertiary);}
+.op-card .arrow{flex-shrink:0; color:var(--text-tertiary);}
+.op-card .arrow svg{width:16px; height:16px;}
 
 /* ============================== Charts ============================== */
 .charts-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:18px;}
@@ -665,7 +730,37 @@ html[data-theme="dark"] .goal-pill-active:hover{background:var(--c-teal-600); co
 </head>
 <body>
 
-<div class="app-shell">
+<!-- ============================== شاشة الدخول ============================== -->
+<div class="auth-screen" id="loginScreen">
+  <div class="auth-card">
+    <img class="logo-img auth-logo" alt="شعار متقنون">
+    <h1>البصيرة التنفيذية</h1>
+    <p class="auth-sub">منصة متقنون لتحفيظ القرآن الكريم بشرق نجران</p>
+    <form id="loginForm" class="auth-form">
+      <label>اسمك
+        <input type="text" id="loginNameInput" placeholder="اكتب اسمك للمتابعة" maxlength="40" autocomplete="off" required>
+      </label>
+      <button type="submit" class="btn btn--primary btn--block">
+        دخول
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- ============================== شاشة الترحيب بعد الدخول ============================== -->
+<div class="auth-screen" id="greetingScreen" style="display:none">
+  <div class="auth-card auth-card--greeting">
+    <img class="logo-img auth-logo" alt="شعار متقنون">
+    <h2 id="greetingText">مرحباً يا فلان في منصة البصيرة التنفيذية</h2>
+    <button class="btn btn--primary" id="startWorkBtn">
+      ابدأ العمل
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+    </button>
+  </div>
+</div>
+
+<div class="app-shell" style="display:none">
 
   <!-- ============================== SIDEBAR ============================== -->
   <aside class="sidebar" id="sidebar">
@@ -681,6 +776,10 @@ html[data-theme="dark"] .goal-pill-active:hover{background:var(--c-teal-600); co
       <button class="nav-item active" data-view="welcome">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M18.4 5.6l-2.8 2.8M8.4 15.6l-2.8 2.8"/></svg>
         <span>البداية وتحميل الملف</span>
+      </button>
+      <button class="nav-item" data-view="operations">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/></svg>
+        <span>آخر العمليات</span>
       </button>
       <button class="nav-item" data-view="dashboard" data-guard="1">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13h4v8H3zM10 8h4v13h-4zM17 4h4v17h-4z"/></svg>
@@ -718,6 +817,10 @@ html[data-theme="dark"] .goal-pill-active:hover{background:var(--c-teal-600); co
     </nav>
 
     <div class="sidebar__foot">
+      <div class="sidebar__user" id="sidebarUserWidget">
+        <span class="name" id="sidebarUserName">—</span>
+        <button id="switchUserBtn" type="button">تبديل المستخدم</button>
+      </div>
       <button class="sidebar__collapse-btn" id="collapseBtn">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l-6 6 6 6M21 12H4"/></svg>
         <span class="lbl">طي القائمة</span>
@@ -755,6 +858,10 @@ html[data-theme="dark"] .goal-pill-active:hover{background:var(--c-teal-600); co
 
       <!-- ========= VIEW: WELCOME / UPLOAD ========= -->
       <section class="view active" id="view-welcome">
+        <div class="welcome-greet-bar" id="welcomeGreetBar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8zM23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+          <span id="welcomeGreetText">مرحباً يا فلان في منصة البصيرة التنفيذية</span>
+        </div>
         <div class="hero-welcome">
           <div class="hero-diamond">
             <svg viewBox="0 0 100 100" width="86" height="86">
@@ -788,6 +895,15 @@ html[data-theme="dark"] .goal-pill-active:hover{background:var(--c-teal-600); co
 
           <div class="template-grid" id="welcomeTemplates"></div>
         </div>
+      </section>
+
+      <!-- ========= VIEW: RECENT OPERATIONS ========= -->
+      <section class="view" id="view-operations">
+        <div class="section-head">
+          <div><span class="eyebrow">السجل المحلي</span><h3>آخر العمليات</h3><p>آخر 5 تحليلات محفوظة على هذا الجهاز فقط — اضغط على أي عملية لعرضها كاملة من جديد</p></div>
+          <button class="btn btn--ghost btn--sm" id="clearOperationsBtn">مسح السجل</button>
+        </div>
+        <div id="operationsList"></div>
       </section>
 
       <!-- ========= VIEW: ANALYZING ========= -->
@@ -861,6 +977,28 @@ html[data-theme="dark"] .goal-pill-active:hover{background:var(--c-teal-600); co
           </button>
           <span class="text-tertiary" style="font-size:12px" id="lastAnalyzedAt"></span>
         </div>
+
+        <!-- لوحة الترشيح الوظيفي — تظهر فقط لقالب فرز المرشحين -->
+        <div class="glass-card shortlist-panel" id="shortlistPanel" style="display:none">
+          <div class="shortlist-panel__head">
+            <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8zM23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg></div>
+            <div><h4>لوحة الترشيح الوظيفي</h4><p>حدّد الوظيفة وعدد المطلوبين — ويُعاد الترشيح فوراً من نفس بيانات الملف</p></div>
+          </div>
+          <div class="shortlist-panel__controls">
+            <label>المسمى الوظيفي
+              <select id="shortlistJobTitleSelect"></select>
+            </label>
+            <label>عدد الموظفين المطلوب
+              <input type="number" id="shortlistHeadcountInput" min="1" max="50" value="1">
+            </label>
+            <button class="btn btn--primary btn--sm" id="shortlistApplyBtn">
+              تحديث الترشيح
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
+            </button>
+          </div>
+          <div id="shortlistResults"></div>
+        </div>
+
         <div id="dashboardAxisChips"></div>
 
         <div class="kpi-grid" id="kpiGrid"></div>
@@ -1125,6 +1263,13 @@ html[data-theme="dark"] .goal-pill-active:hover{background:var(--c-teal-600); co
       <p class="pr-overview" id="prForecastText"></p>
     </section>
 
+    <section class="pr-section" id="prShortlistSection" style="display:none">
+      <h2><span class="pr-num">04.4</span> لوحة الترشيح الوظيفي</h2>
+      <p class="pr-overview" id="prShortlistSummary"></p>
+      <ol class="pr-insights" id="prShortlistPicks"></ol>
+      <p class="pr-overview" id="prShortlistCutoff" style="font-style:italic;"></p>
+    </section>
+
     <section class="pr-section">
       <h2><span class="pr-num">05</span> التوصيات التنفيذية</h2>
       <table class="pr-table pr-decision-table" id="prDecisionTable">
@@ -1155,6 +1300,8 @@ const STATE = {
   columns:[],           // {name, type, samples, stats}
   detectedType:null, overriddenType:null,
   selectedGoals:['comprehensive'],
+  shortlistJobTitle:null, shortlistHeadcount:1,
+  currentOperationId:null,
   selectedAxisName:null,
   primaryMetric:null, primaryCategory:null, primaryTime:null, primaryStatus:null,
   analysis:null,        // {kpis, insights, decision, forecast, alerts}
@@ -1654,6 +1801,139 @@ const VolunteerScoreEngine = {
 
     return {applied:true, factorsUsed: usableFactors.map(f=> ranges[f].col)};
   }
+};
+
+/* ============================================================
+   2.6) CANDIDATE SHORTLIST ENGINE — لوحة الترشيح الوظيفي
+   تعمل فقط على قالب «فرز المرشحين»: تكتشف عمود الوظيفة المتقدم لها،
+   تحسب مؤشر ملاءمة مركّب من كل الأعمدة الرقمية المتاحة فعلياً، وتولّد
+   مقارنة سردية واقعية بين أفضل (N) مرشحين لوظيفة محددة — وليس مجرد ترتيب رقمي.
+   ============================================================ */
+const JOB_TITLE_KEYWORDS = ['الوظيفه المتقدم لها','المسمى الوظيفي','الوظيفه المطلوبه','وظيفه'].map(normalizeAr);
+
+const CandidateShortlistEngine = {
+  findJobTitleColumn(columns){
+    return columns.find(c=> c.type==='category' && JOB_TITLE_KEYWORDS.some(k=> normalizeAr(c.name).includes(k))) || null;
+  },
+
+  findIdentityColumn(columns){
+    return columns.find(c=> c.type==='identifier') || columns.find(c=> c.type==='category') || null;
+  },
+
+  getJobTitles(rows, col){
+    if(!col) return [];
+    const vals = rows.map(r=> r[col.name]).filter(v=> v!==null && v!==undefined && v!=='');
+    return [...new Set(vals)].sort((a,b)=> String(a).localeCompare(String(b),'ar'));
+  },
+
+  // يطبّع كل المؤشرات الرقمية المتاحة لمقياس 0-100 (مع مراعاة الاتجاه العكسي) ويحسب متوسطها كمؤشر ملاءمة لكل مرشح
+  computeFitScores(rows, metricColumns){
+    const ranges = {};
+    metricColumns.forEach(m=>{
+      const vals = rows.map(r=> r[m.name]).filter(v=> typeof v==='number' && !isNaN(v));
+      if(vals.length) ranges[m.name] = {min:Math.min(...vals), max:Math.max(...vals), inverse:!!m.inverse};
+    });
+    return rows.map(r=>{
+      let sum=0, count=0; const factorScores={};
+      Object.keys(ranges).forEach(name=>{
+        const v = r[name];
+        if(typeof v==='number' && !isNaN(v)){
+          const {min,max,inverse} = ranges[name];
+          let norm = max>min ? ((v-min)/(max-min))*100 : 50;
+          if(inverse) norm = 100-norm;
+          sum += norm; count++; factorScores[name]=norm;
+        }
+      });
+      return {row:r, fitScore: count? Math.round((sum/count)*10)/10 : null, factorScores};
+    });
+  },
+
+  buildShortlist(rows, columns, jobTitleCol, jobTitle, headcount){
+    const metricCols = columns.filter(c=> c.type==='metric');
+    const idCol = this.findIdentityColumn(columns);
+    let pool = rows, filtered = false;
+    if(jobTitleCol && jobTitle && jobTitle !== '__all__'){
+      const matching = rows.filter(r=> r[jobTitleCol.name] === jobTitle);
+      if(matching.length){ pool = matching; filtered = true; }
+    }
+    if(!metricCols.length || !pool.length){
+      return {shortlist:[], runnerUp:null, narrative:[], poolSize:pool.length, filtered, idColName: idCol?idCol.name:null, metricCols:[]};
+    }
+    const scored = this.computeFitScores(pool, metricCols)
+      .filter(s=> s.fitScore !== null)
+      .sort((a,b)=> b.fitScore-a.fitScore);
+
+    const n = Math.max(1, Math.min(headcount, scored.length));
+    const shortlist = scored.slice(0, n);
+    const runnerUp = scored.length > n ? scored[n] : null;
+    const narrative = this.buildNarrative(shortlist, runnerUp, metricCols, idCol, jobTitle, filtered, pool.length);
+
+    return {shortlist, runnerUp, narrative, poolSize:pool.length, filtered, idColName: idCol?idCol.name:null, metricCols};
+  },
+
+  candidateName(s, idColName){
+    return idColName && s.row[idColName] ? String(s.row[idColName]) : 'مرشح غير مسمّى';
+  },
+
+  // أبرز معيار يتفوق فيه هذا المرشح مقارنة بمتوسط نفس المجموعة (وليس مجرد أعلى رقم مطلق)
+  topDifferentiator(s, pool){
+    const names = Object.keys(s.factorScores);
+    if(!names.length) return null;
+    let best=null, bestGap=-Infinity;
+    names.forEach(name=>{
+      const poolVals = pool.map(p=> p.factorScores[name]).filter(v=> typeof v==='number');
+      const poolAvg = poolVals.length ? poolVals.reduce((a,b)=>a+b,0)/poolVals.length : 0;
+      const gap = s.factorScores[name] - poolAvg;
+      if(gap > bestGap){ bestGap = gap; best = {name, value:s.row[name], gap}; }
+    });
+    return best;
+  },
+
+  buildNarrative(shortlist, runnerUp, metricCols, idCol, jobTitle, filtered, poolSize){
+    const idColName = idCol ? idCol.name : null;
+    const lines = [];
+    const roleLabel = (filtered && jobTitle) ? `لوظيفة «${jobTitle}»` : 'بين كل المرشحين المتاحين';
+    lines.push({
+      kind:'summary',
+      text:`بناءً على ${fmtNum(poolSize)} مرشحاً ${roleLabel}، وباستخدام ${metricCols.length} معياراً رقمياً من بيانات الملف (${metricCols.map(m=>m.name).join('، ')})، فيما يلي ترشيح الإدارة لأفضل ${fmtNum(shortlist.length)}:`
+    });
+
+    shortlist.forEach((s,i)=>{
+      const name = this.candidateName(s, idColName);
+      const diff = this.topDifferentiator(s, shortlist.concat(runnerUp?[runnerUp]:[]));
+      let text = `«${name}» — مؤشر ملاءمة إجمالي ${fmtNum(s.fitScore)}/100`;
+      if(diff && diff.gap > 1){
+        text += `، ويتفوق خصوصاً في «${diff.name}» (${fmtNum(diff.value)}) مقارنة بمتوسط المتقدمين على هذه الوظيفة.`;
+      } else {
+        text += ` — أداء متوازن نسبياً عبر كل المعايير دون تفوق حاد بمعيار واحد.`;
+      }
+      lines.push({kind:'pick', rank:i+1, name, text});
+    });
+
+    if(runnerUp){
+      const lastAccepted = shortlist[shortlist.length-1];
+      const runnerName = this.candidateName(runnerUp, idColName);
+      const lastName = this.candidateName(lastAccepted, idColName);
+      const gapTotal = Math.round((lastAccepted.fitScore - runnerUp.fitScore)*10)/10;
+      // أكبر فارق بمعيار فردي بين الاثنين لتبرير الفاصل
+      let biggestFactor=null, biggestDiff=-Infinity;
+      Object.keys(lastAccepted.factorScores).forEach(name=>{
+        const d = lastAccepted.factorScores[name] - (runnerUp.factorScores[name]||0);
+        if(Math.abs(d) > Math.abs(biggestDiff)){ biggestDiff=d; biggestFactor=name; }
+      });
+      const closeCall = gapTotal < 5;
+      let text = closeCall
+        ? `الفارق بين آخر مرشح مقبول «${lastName}» وأول مرشح احتياطي «${runnerName}» كان ضئيلاً جداً (${fmtNum(Math.abs(gapTotal),1)} نقطة فقط من 100)`
+        : `الفارق بين آخر مرشح مقبول «${lastName}» وأول مرشح احتياطي «${runnerName}» كان ${fmtNum(Math.abs(gapTotal),1)} نقطة من 100`;
+      if(biggestFactor){
+        text += ` — يعود الفارق الأكبر إلى معيار «${biggestFactor}» (${fmtNum(lastAccepted.row[biggestFactor])} مقابل ${fmtNum(runnerUp.row[biggestFactor])}).`;
+      } else { text += '.'; }
+      if(closeCall) text += ` يُنصح بإبقاء «${runnerName}» كخيار احتياطي مباشر في حال اعتذار أحد المرشحين المختارين.`;
+      lines.push({kind:'cutoff', text});
+    }
+
+    return lines;
+  },
 };
 
 /* ============================================================
@@ -2818,6 +3098,13 @@ const ChatEngine = {
       return 'لا تتوفر بيانات زمنية كافية لإنشاء توقع موثوق (يلزم 3 فترات زمنية على الأقل).';
     }
 
+    if(a.fileType==='candidates' && a.shortlistResult && a.shortlistResult.shortlist.length && /مرشح|ترشيح|توظيف/.test(q) && /افضل|اعلي|رشح|اختار/.test(q)){
+      const sr = a.shortlistResult;
+      const picks = sr.narrative.filter(l=>l.kind==='pick');
+      const roleLabel = STATE.shortlistJobTitle && STATE.shortlistJobTitle!=='__all__' ? `لوظيفة «${STATE.shortlistJobTitle}»` : '';
+      return `الترشيح الحالي ${roleLabel} (${fmtNum(sr.shortlist.length)} ${sr.shortlist.length===1?'مرشح':'مرشحين'}): ` + picks.map(p=>p.text).join(' ');
+    }
+
     if(/افضل|اعلي/.test(q) && !/نمو/.test(q)){
       if(sortedAgg.length) return `أفضل أداء حالياً لدى «${sortedAgg[0].category}» بمتوسط ${fmtValue(sortedAgg[0].avg, unit)} في ${metricLabel}.`;
       return 'لا تتوفر بيانات فئات كافية للمقارنة.';
@@ -2973,6 +3260,21 @@ const ExportEngine = {
       forecastSection.style.display = 'none';
     }
 
+    // 04.4 لوحة الترشيح الوظيفي (قالب فرز المرشحين فقط)
+    const shortlistSection = document.getElementById('prShortlistSection');
+    if(a.fileType==='candidates' && a.shortlistResult && a.shortlistResult.shortlist.length){
+      shortlistSection.style.display = '';
+      const sr = a.shortlistResult;
+      const summaryLine = sr.narrative.find(l=>l.kind==='summary');
+      const picks = sr.narrative.filter(l=>l.kind==='pick');
+      const cutoff = sr.narrative.find(l=>l.kind==='cutoff');
+      document.getElementById('prShortlistSummary').textContent = summaryLine ? summaryLine.text : '';
+      document.getElementById('prShortlistPicks').innerHTML = picks.map(p=>`<li>${escapeHtml(p.text)}</li>`).join('');
+      document.getElementById('prShortlistCutoff').textContent = cutoff ? cutoff.text : '';
+    } else {
+      shortlistSection.style.display = 'none';
+    }
+
     // 05 التوصيات
     const tbody = document.querySelector('#prDecisionTable tbody');
     const allDec = [...(a.decision?.urgent||[]).map(x=>({...x,cls:tierLabel(a.fileType,'urgent')})),
@@ -3086,6 +3388,18 @@ const ExportEngine = {
       XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(discSheet), 'اكتشافات ذكية');
     }
 
+    if(a.fileType==='candidates' && a.shortlistResult && a.shortlistResult.shortlist.length){
+      const sr = a.shortlistResult;
+      const idColName = sr.idColName;
+      const shortlistSheet = sr.shortlist.map((s,i)=>({
+        'الترتيب': i+1,
+        'المرشح': idColName ? s.row[idColName] : '—',
+        'مؤشر الملاءمة': s.fitScore,
+        'الوظيفة': STATE.shortlistJobTitle==='__all__' ? 'الكل' : STATE.shortlistJobTitle,
+      }));
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(shortlistSheet), 'الترشيح الوظيفي');
+    }
+
     XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(STATE.cleanRows), 'البيانات النظيفة');
 
     XLSX.writeFile(wb, 'ملخص-البصيرة-متقنون.xlsx');
@@ -3097,6 +3411,73 @@ const ExportEngine = {
     await this.fillChartsSection();
     window.print();
   }
+};
+
+/* ============================================================
+   9.5) AUTH — تعريف بسيط بالاسم محلياً (ليس نظام صلاحيات حقيقي،
+   فقط لتخصيص الترحيب وربط سجل العمليات بهذا الجهاز)
+   ============================================================ */
+const Auth = {
+  KEY: 'bsira_username',
+  getUsername(){
+    try{ return localStorage.getItem(this.KEY) || null; }catch(e){ return null; }
+  },
+  setUsername(name){
+    try{ localStorage.setItem(this.KEY, name); return true; }catch(e){ console.warn('تعذر حفظ الاسم محلياً:', e); return false; }
+  },
+  clearUsername(){
+    try{ localStorage.removeItem(this.KEY); }catch(e){}
+  },
+};
+
+/* ============================================================
+   9.6) OPERATIONS STORE — سجل محلي بآخر 5 عمليات تحليل، يحفظ
+   لقطة كاملة (بيانات + تصنيف + نتائج التحليل) تتيح استرجاع
+   العملية بالكامل لاحقاً دون الحاجة لرفع الملف من جديد
+   ============================================================ */
+const OPERATIONS_KEY = 'bsira_operations';
+function _dateReplacer(key, value){
+  if(value instanceof Date) return {__isDate:true, iso:value.toISOString()};
+  return value;
+}
+function _dateReviver(key, value){
+  if(value && typeof value==='object' && value.__isDate) return new Date(value.iso);
+  return value;
+}
+const OperationsStore = {
+  load(){
+    try{
+      const raw = localStorage.getItem(OPERATIONS_KEY);
+      if(!raw) return [];
+      const parsed = JSON.parse(raw, _dateReviver);
+      return Array.isArray(parsed) ? parsed : [];
+    }catch(e){ console.warn('تعذر قراءة سجل العمليات المحلي:', e); return []; }
+  },
+  _save(ops){
+    try{ localStorage.setItem(OPERATIONS_KEY, JSON.stringify(ops, _dateReplacer)); return true; }
+    catch(e){ console.warn('تعذر حفظ سجل العمليات (قد تكون المساحة المحلية ممتلئة):', e); return false; }
+  },
+  add(name, snapshot){
+    let ops = this.load();
+    const op = { id:'op_'+Date.now()+'_'+Math.random().toString(36).slice(2,7), name, timestamp:new Date().toISOString(), snapshot };
+    ops.unshift(op);
+    ops = ops.slice(0,5);
+    let ok = this._save(ops);
+    while(!ok && ops.length>1){
+      ops.pop(); // قلّص السجل تدريجياً إذا فشل الحفظ بسبب امتلاء المساحة المحلية، دون تعطيل التطبيق
+      ok = this._save(ops);
+    }
+    return ok ? op.id : null;
+  },
+  update(id, snapshot){
+    if(!id) return false;
+    let ops = this.load();
+    const idx = ops.findIndex(o=> o.id===id);
+    if(idx===-1) return false;
+    ops[idx].snapshot = snapshot;
+    return this._save(ops);
+  },
+  clear(){ try{ localStorage.removeItem(OPERATIONS_KEY); }catch(e){} },
 };
 
 /* ============================================================
@@ -3113,6 +3494,49 @@ const App = {
     this.bindChat();
     this.bindButtons();
     this.bindMobileNav();
+    this.initAuth();
+  },
+
+  /* ---------- Auth (تعريف محلي بسيط — وليس نظام صلاحيات) ---------- */
+  initAuth(){
+    document.getElementById('loginForm').addEventListener('submit', (e)=>{
+      e.preventDefault();
+      const input = document.getElementById('loginNameInput');
+      const name = (input.value || '').trim();
+      if(!name){ showToast('الرجاء كتابة اسمك للمتابعة'); return; }
+      Auth.setUsername(name);
+      this.showGreeting(name);
+    });
+    document.getElementById('startWorkBtn').addEventListener('click', ()=> this.enterApp());
+    document.getElementById('switchUserBtn').addEventListener('click', ()=>{
+      Auth.clearUsername();
+      document.querySelector('.app-shell').style.display = 'none';
+      document.getElementById('loginNameInput').value = '';
+      document.getElementById('loginScreen').style.display = 'flex';
+      document.getElementById('greetingScreen').style.display = 'none';
+    });
+
+    const saved = Auth.getUsername();
+    if(saved){
+      this.showGreeting(saved);
+    } else {
+      document.getElementById('loginScreen').style.display = 'flex';
+    }
+  },
+
+  showGreeting(name){
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('greetingText').textContent = `مرحباً يا ${name} في منصة البصيرة التنفيذية`;
+    document.getElementById('greetingScreen').style.display = 'flex';
+  },
+
+  enterApp(){
+    const name = Auth.getUsername() || 'بك';
+    document.getElementById('greetingScreen').style.display = 'none';
+    document.querySelector('.app-shell').style.display = 'flex';
+    document.getElementById('welcomeGreetText').textContent = `مرحباً يا ${name} في منصة البصيرة التنفيذية`;
+    document.getElementById('sidebarUserName').textContent = name;
+    this.renderOperationsList();
   },
 
   /* ---------- Navigation ---------- */
@@ -3126,6 +3550,7 @@ const App = {
           this.goTo('welcome');
           return;
         }
+        if(view === 'operations') this.renderOperationsList();
         this.goTo(view);
       });
     });
@@ -3136,6 +3561,7 @@ const App = {
     document.querySelectorAll('.view').forEach(v=> v.classList.toggle('active', v.id==='view-'+view));
     const titles = {
       welcome:['البداية وتحميل الملف','حوّل أي ملف Excel إلى تحليل ذكي وقرارات تنفيذية خلال ثوانٍ'],
+      operations:['آخر العمليات','سجل محلي بآخر 5 تحليلات على هذا الجهاز'],
       analyzing:['جاري التحليل...', 'يرجى الانتظار قليلاً'],
       confirm:['تأكيد الفهم','راجع كيف فهمت البصيرة بياناتك قبل المتابعة'],
       goal:['تحديد الهدف','اختر هدفك من هذا التحليل'],
@@ -3304,6 +3730,9 @@ Object.assign(App, {
     STATE.detectedType = null;
     STATE.columns = [];
     STATE.analysis = null;
+    STATE.shortlistJobTitle = null;
+    STATE.shortlistHeadcount = 1;
+    STATE.currentOperationId = null;
   },
 
   async handleFile(file){
@@ -3473,6 +3902,12 @@ Object.assign(App, {
     });
     document.getElementById('activeGoalPill').addEventListener('click', ()=> this.enterGoalScreen());
 
+    document.getElementById('shortlistApplyBtn').addEventListener('click', ()=> this.applyShortlistControls());
+    document.getElementById('shortlistJobTitleSelect').addEventListener('change', ()=> this.applyShortlistControls());
+    document.getElementById('shortlistHeadcountInput').addEventListener('keydown', (e)=>{ if(e.key==='Enter') this.applyShortlistControls(); });
+
+    document.getElementById('clearOperationsBtn').addEventListener('click', ()=> this.clearOperations());
+
     document.getElementById('exportPdfBtn').addEventListener('click', ()=> ExportEngine.exportPDF());
     document.getElementById('exportExcelBtn').addEventListener('click', ()=> ExportEngine.exportExcel());
     document.getElementById('quickPrintBtn').addEventListener('click', ()=> ExportEngine.quickPrint());
@@ -3509,6 +3944,7 @@ Object.assign(App, {
     this.renderDiscoveries();
     this.reorderSwotQuadrants();
     this.updateGoalPillText();
+    this.updateCurrentOperationSnapshot();
   },
 
   reorderSwotQuadrants(){
@@ -3537,7 +3973,16 @@ Object.assign(App, {
   },
 
   runAnalysis(){
-    const finalType = STATE.overriddenType || STATE.detectedType.key;
+    this.rebuildAnalysisFromState(null);
+    showToast('تم بناء اللوحة التنفيذية بنجاح');
+    this.saveCurrentOperation();
+  },
+
+  // يبني كل مخرجات التحليل (KPIs، مركز القرار، SWOT، الاكتشافات، الترشيح الوظيفي...)
+  // من STATE.cleanRows/columns الحاليين — مشتركة بين أول تحليل لملف جديد وبين استرجاع
+  // عملية سابقة بالكامل من السجل المحلي (لذلك لا تُكرَّر المنطق ولا يحدث تعارض بينهما)
+  rebuildAnalysisFromState(preferredAxisName){
+    const finalType = STATE.overriddenType || (STATE.detectedType ? STATE.detectedType.key : 'general');
 
     // وحدة تحليل المتطوعين الذكي: تُضيف عمود "مؤشر التطوع الذكي" تلقائياً
     // عند اكتشاف ملف متطوعين، ليتدفق بعدها عبر كل محركات التحليل القائمة
@@ -3574,15 +4019,29 @@ Object.assign(App, {
     }
 
     STATE.analysis = {fileType:finalType, picks, kpis, baseKpis:kpis, forecast, statusCounts, discoveries, aggregates:[], decision:null, insights:[], alerts:[], swot:null};
+
+    // لوحة الترشيح الوظيفي: تعمل فقط لقالب فرز المرشحين — تحافظ على اختيار سابق (وظيفة/عدد)
+    // عند الاسترجاع من السجل، وتختار قيماً افتراضية فقط عند تحليل جديد
+    if(finalType === 'candidates'){
+      const jobTitleCol = CandidateShortlistEngine.findJobTitleColumn(STATE.columns);
+      const jobTitles = CandidateShortlistEngine.getJobTitles(STATE.cleanRows, jobTitleCol);
+      STATE.analysis.candidateMeta = {jobTitleCol, jobTitles};
+      if(!STATE.shortlistJobTitle) STATE.shortlistJobTitle = jobTitles.length ? jobTitles[0] : '__all__';
+      if(!STATE.shortlistHeadcount) STATE.shortlistHeadcount = 1;
+      STATE.analysis.shortlistResult = CandidateShortlistEngine.buildShortlist(
+        STATE.cleanRows, STATE.columns, jobTitleCol, STATE.shortlistJobTitle, STATE.shortlistHeadcount
+      );
+    }
+
     this.renderRawTable('');
     this.renderDiscoveries();
+    this.renderCandidateShortlist();
 
     this.updateGoalPillText();
     document.getElementById('lastAnalyzedAt').textContent = 'آخر تحليل: ' + new Date().toLocaleString('ar-SA');
 
     this.goTo('dashboard');
-    this.computeAnalysisForAxis(picks.primaryCategory ? picks.primaryCategory.name : null);
-    showToast('تم بناء اللوحة التنفيذية بنجاح');
+    this.computeAnalysisForAxis(preferredAxisName || (picks.primaryCategory ? picks.primaryCategory.name : null));
   },
 
   // يعيد حساب المقارنة/مركز القرار/الاستنتاجات/الرسوم بناءً على محور مختار من المستخدم
@@ -3623,6 +4082,7 @@ Object.assign(App, {
     const activeView = document.querySelector('.view.active');
     const viewName = activeView ? activeView.id.replace('view-','') : null;
     this.refreshVisibleCharts(viewName);
+    this.updateCurrentOperationSnapshot();
   },
 
   renderAxisChips(){
@@ -3686,6 +4146,148 @@ Object.assign(App, {
         <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${icons[d.icon]||icons.compass}</svg></div>
         <div><h5>${escapeHtml(d.title)}</h5><p>${escapeHtml(d.text)}</p></div>
       </div>`).join('');
+  },
+
+  renderCandidateShortlist(){
+    const a = STATE.analysis;
+    const panel = document.getElementById('shortlistPanel');
+    if(!panel) return;
+    if(!a || a.fileType !== 'candidates' || !a.candidateMeta){
+      panel.style.display = 'none';
+      return;
+    }
+    panel.style.display = '';
+
+    const sel = document.getElementById('shortlistJobTitleSelect');
+    const { jobTitleCol, jobTitles } = a.candidateMeta;
+    if(!jobTitleCol){
+      sel.innerHTML = `<option value="__all__">كل المرشحين (لم يُعثر على عمود وظيفة)</option>`;
+      sel.disabled = true;
+    } else {
+      sel.disabled = false;
+      sel.innerHTML = jobTitles.map(t=> `<option value="${escapeHtml(t)}" ${t===STATE.shortlistJobTitle?'selected':''}>${escapeHtml(t)}</option>`).join('')
+        + `<option value="__all__" ${STATE.shortlistJobTitle==='__all__'?'selected':''}>كل المرشحين (بدون تصفية حسب الوظيفة)</option>`;
+    }
+    document.getElementById('shortlistHeadcountInput').value = STATE.shortlistHeadcount;
+
+    const result = a.shortlistResult;
+    const resultsEl = document.getElementById('shortlistResults');
+    if(!result || !result.shortlist.length){
+      resultsEl.innerHTML = `<div class="shortlist-empty">لا تتوفر بيانات رقمية كافية لحساب ترشيح لهذه الوظيفة — تأكد من وجود أعمدة تقييم/خبرة رقمية في الملف.</div>`;
+      return;
+    }
+    const summaryLine = result.narrative.find(l=> l.kind==='summary');
+    const picks = result.narrative.filter(l=> l.kind==='pick');
+    const cutoff = result.narrative.find(l=> l.kind==='cutoff');
+    resultsEl.innerHTML = `
+      ${summaryLine ? `<p class="shortlist-summary">${escapeHtml(summaryLine.text)}</p>` : ''}
+      <div class="shortlist-cards">
+        ${picks.map(p=> `<div class="shortlist-card"><span class="rank">${p.rank<=3 ? ['🥇','🥈','🥉'][p.rank-1] : '#'+p.rank}</span><p>${escapeHtml(p.text)}</p></div>`).join('')}
+      </div>
+      ${cutoff ? `<div class="shortlist-cutoff"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h7l-1 8 10-12h-7l1-8z"/></svg><p>${escapeHtml(cutoff.text)}</p></div>` : ''}
+    `;
+  },
+
+  applyShortlistControls(){
+    const a = STATE.analysis;
+    if(!a || a.fileType !== 'candidates' || !a.candidateMeta) return;
+    const sel = document.getElementById('shortlistJobTitleSelect');
+    const input = document.getElementById('shortlistHeadcountInput');
+    STATE.shortlistJobTitle = sel.value;
+    let n = parseInt(input.value, 10);
+    if(isNaN(n) || n < 1) n = 1;
+    STATE.shortlistHeadcount = n;
+    input.value = n;
+    a.shortlistResult = CandidateShortlistEngine.buildShortlist(
+      STATE.cleanRows, STATE.columns, a.candidateMeta.jobTitleCol, STATE.shortlistJobTitle, STATE.shortlistHeadcount
+    );
+    this.renderCandidateShortlist();
+    this.updateCurrentOperationSnapshot();
+    showToast('تم تحديث الترشيح فوراً دون إعادة تحليل الملف');
+  },
+
+  /* ---------- آخر العمليات (سجل محلي على هذا الجهاز) ---------- */
+  buildOperationName(){
+    const a = STATE.analysis;
+    const typeLabel = a ? this.typeLabel(a.fileType) : 'تحليل';
+    const fileLabel = STATE.fileName ? STATE.fileName.replace(/\.(xlsx|xls|csv)$/i,'') : 'بيانات بدون اسم';
+    return `${typeLabel} — ${fileLabel}`;
+  },
+
+  buildOperationSnapshot(){
+    return {
+      fileName: STATE.fileName, fileSheets: STATE.fileSheets,
+      cleanRows: STATE.cleanRows, columns: STATE.columns, headers: STATE.headers, formatHints: STATE.formatHints,
+      detectedType: STATE.detectedType, overriddenType: STATE.overriddenType,
+      selectedAxisName: STATE.selectedAxisName, selectedGoals: STATE.selectedGoals,
+      shortlistJobTitle: STATE.shortlistJobTitle, shortlistHeadcount: STATE.shortlistHeadcount,
+    };
+  },
+
+  saveCurrentOperation(){
+    try{
+      const name = this.buildOperationName();
+      const id = OperationsStore.add(name, this.buildOperationSnapshot());
+      STATE.currentOperationId = id;
+    }catch(err){ console.warn('تعذر حفظ هذه العملية بالسجل المحلي:', err); }
+  },
+
+  // يحدّث لقطة العملية الحالية في السجل المحلي (محورها/أهدافها/إعدادات ترشيحها) كلما
+  // غيّر المستخدم شيئاً أثناء الاستكشاف — حتى يعكس "آخر العمليات" آخر حالة شاهدها فعلياً
+  updateCurrentOperationSnapshot(){
+    if(!STATE.currentOperationId) return;
+    try{ OperationsStore.update(STATE.currentOperationId, this.buildOperationSnapshot()); }
+    catch(err){ console.warn('تعذر تحديث سجل العملية الحالية:', err); }
+  },
+
+  renderOperationsList(){
+    const listEl = document.getElementById('operationsList');
+    if(!listEl) return;
+    const ops = OperationsStore.load();
+    if(!ops.length){
+      listEl.innerHTML = `<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 3"/></svg><h4>لا توجد عمليات سابقة بعد</h4><p>أي ملف تحلله بنجاح يُحفظ هنا تلقائياً على هذا الجهاز — حتى آخر 5 عمليات</p></div>`;
+      return;
+    }
+    listEl.innerHTML = ops.map(op=>{
+      const d = new Date(op.timestamp);
+      const when = d.toLocaleString('ar-SA', {year:'numeric', month:'long', day:'numeric', hour:'2-digit', minute:'2-digit'});
+      return `<div class="op-card" data-op-id="${op.id}">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg></div>
+        <div class="op-card__body"><h5>${escapeHtml(op.name)}</h5><span>${escapeHtml(when)}</span></div>
+        <div class="arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 17l-5-5 5-5M18 17l-5-5 5-5"/></svg></div>
+      </div>`;
+    }).join('');
+    listEl.querySelectorAll('.op-card').forEach(card=>{
+      card.addEventListener('click', ()=> this.restoreOperation(card.dataset.opId));
+    });
+
+    const clearBtn = document.getElementById('clearOperationsBtn');
+    if(clearBtn) clearBtn.style.display = ops.length ? '' : 'none';
+  },
+
+  restoreOperation(opId){
+    const ops = OperationsStore.load();
+    const op = ops.find(o=> o.id===opId);
+    if(!op){ showToast('تعذر العثور على هذه العملية — قد تكون حُذفت'); return; }
+    const s = op.snapshot;
+    if(!s || !s.cleanRows || !s.cleanRows.length){ showToast('بيانات هذه العملية غير مكتملة'); return; }
+
+    STATE.fileName = s.fileName; STATE.fileSheets = s.fileSheets;
+    STATE.cleanRows = s.cleanRows; STATE.columns = s.columns; STATE.headers = s.headers; STATE.formatHints = s.formatHints || {};
+    STATE.detectedType = s.detectedType; STATE.overriddenType = s.overriddenType;
+    STATE.selectedAxisName = s.selectedAxisName;
+    STATE.selectedGoals = (s.selectedGoals && s.selectedGoals.length) ? s.selectedGoals : ['comprehensive'];
+    STATE.shortlistJobTitle = s.shortlistJobTitle; STATE.shortlistHeadcount = s.shortlistHeadcount || 1;
+    STATE.currentOperationId = op.id;
+
+    this.rebuildAnalysisFromState(STATE.selectedAxisName);
+    showToast('تم استرجاع العملية بالكامل من السجل المحلي');
+  },
+
+  clearOperations(){
+    OperationsStore.clear();
+    this.renderOperationsList();
+    showToast('تم مسح سجل العمليات المحلي');
   },
 
   updateAlertBadge(){
