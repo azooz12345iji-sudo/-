@@ -148,6 +148,11 @@ h1,h2,h3,h4,h5{font-family:var(--font-display); font-weight:800; letter-spacing:
 .auth-card--greeting .auth-logo{width:72px; height:72px;}
 .auth-error{font-size:12px; color:var(--c-red); background:var(--c-red-bg); padding:9px 12px; border-radius:10px; text-align:right; line-height:1.7;}
 .auth-note{font-size:11.5px; color:var(--text-tertiary); text-align:center; line-height:1.8;}
+.magic-link-waiting{display:flex; flex-direction:column; align-items:center; gap:14px; padding:20px; border-radius:16px; background:var(--bg-sunken); margin:8px 0 16px;}
+.magic-link-icon{width:56px; height:56px; border-radius:16px; background:var(--c-teal-100); color:var(--c-teal-700); display:flex; align-items:center; justify-content:center;}
+.magic-link-icon svg{width:26px; height:26px;}
+html[data-theme="dark"] .magic-link-icon{background:rgba(63,140,140,.18); color:var(--c-teal-300);}
+.magic-link-waiting p{font-size:13px; font-weight:700; color:var(--text-primary); text-align:center; line-height:1.8; margin:0;}
 .auth-link{background:none; border:none; color:var(--c-teal-700); font-size:12.5px; font-weight:700; cursor:pointer; padding:4px; text-decoration:underline; text-underline-offset:3px;}
 html[data-theme="dark"] .auth-link{color:var(--c-teal-300);}
 .auth-card--greeting .auth-sub{margin-bottom:24px;}
@@ -786,7 +791,7 @@ html[data-theme="dark"] .goal-pill-active:hover{background:var(--c-teal-600); co
         <input type="email" id="loginEmailInput" placeholder="name@example.com" autocomplete="email" required>
       </label>
       <button type="submit" class="btn btn--primary btn--block" id="sendOtpBtn">
-        إرسال رمز التحقق
+        إرسال رابط الدخول
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
       </button>
       <p class="auth-error" id="loginError" style="display:none"></p>
@@ -795,23 +800,20 @@ html[data-theme="dark"] .goal-pill-active:hover{background:var(--c-teal-600); co
   </div>
 </div>
 
-<!-- ============================== شاشة الدخول: رمز التحقق OTP ============================== -->
+<!-- ============================== شاشة الانتظار: بعد إرسال رابط الدخول ============================== -->
 <div class="auth-screen" id="otpScreen" style="display:none">
   <div class="auth-card">
     <img class="logo-img auth-logo" alt="شعار متقنون">
-    <h1>تحقق من بريدك</h1>
-    <p class="auth-sub">أرسلنا رمزاً مكوّناً من 6 أرقام إلى <b id="otpEmailLabel"></b></p>
-    <form id="otpForm" class="auth-form">
-      <label>رمز التحقق
-        <input type="text" id="otpCodeInput" placeholder="000000" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="one-time-code" required>
-      </label>
-      <button type="submit" class="btn btn--primary btn--block" id="verifyOtpBtn">
-        تحقق ودخول
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-      </button>
-      <p class="auth-error" id="otpError" style="display:none"></p>
-      <button type="button" class="auth-link" id="backToEmailBtn">تغيير البريد الإلكتروني</button>
-    </form>
+    <h1>تحقق من بريدك 📬</h1>
+    <p class="auth-sub">أرسلنا رابط دخول إلى <b id="otpEmailLabel"></b></p>
+    <div class="magic-link-waiting">
+      <div class="magic-link-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+      </div>
+      <p>افتح بريدك الإلكتروني واضغط على الرابط الموجود في الرسالة للدخول مباشرةً إلى المنصة.</p>
+      <p class="auth-note" style="display:block">الرابط صالح لـ 24 ساعة ويمكن استخدامه مرة واحدة فقط.</p>
+    </div>
+    <button type="button" class="auth-link" id="backToEmailBtn">تغيير البريد الإلكتروني</button>
   </div>
 </div>
 
@@ -3559,22 +3561,34 @@ const SupabaseService = {
   isAvailable(){ return !!sb; },
 
   /* ---------- المصادقة (Auth) عبر بريد إلكتروني + رمز تحقق OTP ---------- */
-  async sendOtp(email){
+  async sendOtp(email, redirectUrl){
     if(!sb) return {ok:false, error:'الاتصال بالخادم غير متاح حالياً'};
     try{
-      const { error } = await sb.auth.signInWithOtp({ email, options:{ shouldCreateUser:true } });
+      const siteUrl = redirectUrl || (window.location.origin + window.location.pathname);
+      const { error } = await sb.auth.signInWithOtp({
+        email,
+        options:{
+          shouldCreateUser: true,
+          emailRedirectTo: siteUrl,
+        }
+      });
       if(error) return {ok:false, error:error.message};
       return {ok:true};
-    }catch(err){ return {ok:false, error: err.message || 'تعذر إرسال رمز التحقق'}; }
+    }catch(err){ return {ok:false, error: err.message || 'تعذر إرسال رابط الدخول'}; }
   },
 
   async verifyOtp(email, token){
     if(!sb) return {ok:false, error:'الاتصال بالخادم غير متاح حالياً'};
     try{
-      const { data, error } = await sb.auth.verifyOtp({ email, token, type:'email' });
+      const cleanToken = String(token).replace(/\s/g,'').trim();
+      const { data, error } = await sb.auth.verifyOtp({
+        email,
+        token: cleanToken,
+        type: 'email'
+      });
       if(error) return {ok:false, error:error.message};
       return {ok:true, session:data.session, user:data.user};
-    }catch(err){ return {ok:false, error: err.message || 'رمز التحقق غير صحيح'}; }
+    }catch(err){ return {ok:false, error: err.message || 'رمز التحقق غير صحيح أو منتهي الصلاحية'}; }
   },
 
   async getSession(){
@@ -3774,81 +3788,45 @@ const App = {
 
   /* ---------- Auth (تعريف محلي بسيط — وليس نظام صلاحيات) ---------- */
   async initAuth(){
-    document.getElementById('loginForm').addEventListener('submit', async (e)=>{
-      e.preventDefault();
-      const email = (document.getElementById('loginEmailInput').value || '').trim();
-      const errEl = document.getElementById('loginError');
-      errEl.style.display = 'none';
-      if(!email) return;
-      const btn = document.getElementById('sendOtpBtn');
-      btn.disabled = true;
-      const res = await SupabaseService.sendOtp(email);
-      btn.disabled = false;
-      if(!res.ok){
-        errEl.textContent = res.error || 'تعذر إرسال رمز التحقق، حاول مرة أخرى';
-        errEl.style.display = 'block';
-        return;
-      }
-      STATE.pendingEmail = email;
-      document.getElementById('otpEmailLabel').textContent = email;
-      document.getElementById('loginScreen').style.display = 'none';
-      document.getElementById('otpScreen').style.display = 'flex';
-      document.getElementById('otpCodeInput').focus();
-    });
+    // ====================================================================
+    // نظام تسجيل الدخول عبر Magic Link مع دعم كامل للأجهزة المتعددة:
+    //
+    // سيناريو 1 — نفس الجهاز/المتصفح:
+    //   الكمبيوتر يرسل رابط → onAuthStateChange يلتقط الجلسة تلقائياً
+    //
+    // سيناريو 2 — جهاز مختلف (الجوال يفتح الرابط):
+    //   الكمبيوتر ينشئ قناة سرية (Realtime) وينتظر عليها
+    //   الجوال يفتح الرابط → يحصل على الجلسة → يرسلها على القناة
+    //   الكمبيوتر يستقبل الجلسة ويدخل تلقائياً ✅
+    // ====================================================================
 
-    document.getElementById('otpForm').addEventListener('submit', async (e)=>{
-      e.preventDefault();
-      const code = (document.getElementById('otpCodeInput').value || '').trim();
-      const errEl = document.getElementById('otpError');
-      errEl.style.display = 'none';
-      if(!code) return;
-      const btn = document.getElementById('verifyOtpBtn');
-      btn.disabled = true;
-      const res = await SupabaseService.verifyOtp(STATE.pendingEmail, code);
-      btn.disabled = false;
-      if(!res.ok){
-        errEl.textContent = res.error || 'رمز التحقق غير صحيح أو منتهي الصلاحية';
-        errEl.style.display = 'block';
-        return;
-      }
-      await this.handleAuthenticated(res.user);
-    });
-
+    // الأزرار الثابتة (لا علاقة بالتدفق)
     document.getElementById('backToEmailBtn').addEventListener('click', ()=>{
+      this._stopCrossDeviceWaiting();
       document.getElementById('otpScreen').style.display = 'none';
       document.getElementById('loginScreen').style.display = 'flex';
-      document.getElementById('otpCodeInput').value = '';
-      document.getElementById('otpError').style.display = 'none';
     });
-
     document.getElementById('nameCaptureForm').addEventListener('submit', async (e)=>{
       e.preventDefault();
       const name = (document.getElementById('nameCaptureInput').value || '').trim();
       if(!name) return;
-      if(STATE.currentUser){
-        SupabaseService.setDisplayName(STATE.currentUser.id, name);
-        STATE.currentProfile = STATE.currentProfile || {};
-        STATE.currentProfile.display_name = name;
-      }
+      if(STATE.currentUser){ SupabaseService.setDisplayName(STATE.currentUser.id, name); }
+      if(STATE.currentProfile) STATE.currentProfile.display_name = name;
       Auth.setUsername(name);
       this.showGreeting(name);
     });
-
     document.getElementById('startWorkBtn').addEventListener('click', ()=> this.enterApp());
-
     document.getElementById('switchUserBtn').addEventListener('click', async ()=>{
+      this._stopCrossDeviceWaiting();
       await SupabaseService.signOut();
       Auth.clearUsername();
       STATE.currentUser = null; STATE.currentProfile = null; STATE.pendingEmail = null;
       document.querySelector('.app-shell').style.display = 'none';
-      document.getElementById('loginEmailInput').value = '';
-      document.getElementById('otpCodeInput').value = '';
-      document.getElementById('otpScreen').style.display = 'none';
-      document.getElementById('greetingScreen').style.display = 'none';
-      document.getElementById('nameCaptureScreen').style.display = 'none';
+      ['otpScreen','greetingScreen','nameCaptureScreen'].forEach(id=> document.getElementById(id).style.display='none');
       document.getElementById('loginScreen').style.display = 'flex';
     });
 
+    // ====== Supabase غير متاح (لا يوجد إنترنت أو خطأ تهيئة)
     if(!SupabaseService.isAvailable()){
       document.getElementById('authUnavailableNote').style.display = 'block';
       document.getElementById('sendOtpBtn').disabled = true;
@@ -3856,18 +3834,189 @@ const App = {
       return;
     }
 
-    const cachedName = Auth.getUsername(); // للعرض الفوري بينما نتحقق من الجلسة الحقيقية بالخلفية
+    // ====== تحقق أولاً: هل هذا الجهاز هو من نقر الرابط؟ (يحمل ?dt= في الـ URL)
+    const urlParams = new URLSearchParams(window.location.search);
+    const incomingDt = urlParams.get('dt');
+    if(incomingDt && sb){
+      // نظّف الـ URL بدون إعادة تحميل
+      window.history.replaceState({}, '', window.location.pathname);
+      // هذا الجهاز نقر الرابط → أرسل الجلسة للجهاز الأصلي (الكمبيوتر)
+      await this._handleMagicLinkArrival(incomingDt);
+      return;
+    }
+
+    // ====== للأجهزة الأخرى: استمع لتغيير الجلسة في نفس المتصفح (نفس الجهاز)
+    SupabaseService.onAuthChange(async (event, session)=>{
+      if(event === 'SIGNED_IN' && session && session.user && !STATE.currentUser){
+        this._stopCrossDeviceWaiting();
+        await this.handleAuthenticated(session.user);
+      }
+    });
+
+    // ====== فحص جلسة موجودة مسبقاً (تجديد صفحة)
+    const cachedName = Auth.getUsername();
     const session = await SupabaseService.getSession();
     if(session && session.user){
       await this.handleAuthenticated(session.user, cachedName);
-    } else {
-      document.getElementById('loginScreen').style.display = 'flex';
+      return;
     }
+
+    // ====== شاشة الدخول العادية
+    document.getElementById('loginScreen').style.display = 'flex';
+    document.getElementById('loginForm').addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const email = (document.getElementById('loginEmailInput').value || '').trim();
+      const errEl = document.getElementById('loginError');
+      errEl.style.display = 'none';
+      if(!email) return;
+      const btn = document.getElementById('sendOtpBtn');
+      btn.disabled = true; btn.textContent = 'جاري الإرسال...';
+
+      // أنشئ رمز جهاز فريد (device token) وابدأ الاستماع على قناة خاصة به
+      const dt = this._genDeviceToken();
+      STATE.pendingDeviceToken = dt;
+      const redirectUrl = `${window.location.origin}${window.location.pathname}?dt=${dt}`;
+
+      const res = await SupabaseService.sendOtp(email, redirectUrl);
+      btn.disabled = false;
+      btn.innerHTML = 'إرسال رابط الدخول <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
+      if(!res.ok){
+        errEl.textContent = res.error || 'تعذر إرسال الرابط، تحقق من البريد وحاول مرة أخرى';
+        errEl.style.display = 'block';
+        return;
+      }
+
+      STATE.pendingEmail = email;
+      document.getElementById('otpEmailLabel').textContent = email;
+      document.getElementById('loginScreen').style.display = 'none';
+      document.getElementById('otpScreen').style.display = 'flex';
+
+      // ابدأ الاستماع على القناة السرية للجهاز (ينتظر إشارة من الجوال)
+      this._startCrossDeviceWaiting(dt);
+    });
+  },
+
+  // ====== توليد معرّف جهاز فريد
+  _genDeviceToken(){
+    try{ return crypto.randomUUID(); }
+    catch(e){ return Date.now().toString(36) + Math.random().toString(36).slice(2); }
+  },
+
+  // ====== الجهاز الذي نقر الرابط يُرسل الجلسة للكمبيوتر المنتظر
+  async _handleMagicLinkArrival(deviceToken){
+    // Supabase يعالج الـ access_token من الـ URL hash تلقائياً عند التهيئة
+    // نستعلم عن الجلسة بعد لحظة قصيرة لنضمن اكتمال المعالجة
+    const tryGetSession = async (retries)=>{
+      const session = await SupabaseService.getSession();
+      if(session && session.user) return session;
+      if(retries > 0){
+        await new Promise(r=> setTimeout(r, 600));
+        return tryGetSession(retries - 1);
+      }
+      return null;
+    };
+
+    const session = await tryGetSession(5);
+    if(!session){
+      showToast('انتهت صلاحية رابط الدخول، أدخل بريدك مجدداً');
+      document.getElementById('loginScreen').style.display = 'flex';
+      this._bindAuthFormHandlers();
+      return;
+    }
+
+    // أرسل الجلسة على القناة السرية لينتبه الكمبيوتر
+    this._broadcastSessionToWaiter(deviceToken, session);
+
+    // هذا الجهاز (الجوال أو أي جهاز) يدخل بنفسه كذلك
+    await this.handleAuthenticated(session.user);
+  },
+
+  // ====== إرسال الجلسة عبر Supabase Realtime Broadcast
+  _broadcastSessionToWaiter(deviceToken, session){
+    if(!sb) return;
+    try{
+      const ch = sb.channel(`bsira_xd:${deviceToken}`);
+      ch.subscribe(status=>{
+        if(status === 'SUBSCRIBED'){
+          ch.send({
+            type: 'broadcast',
+            event: 'session_ready',
+            payload: { at: session.access_token, rt: session.refresh_token }
+          });
+          // أرسل أكثر من مرة تحسباً لأي تأخير
+          setTimeout(()=> ch.send({ type:'broadcast', event:'session_ready', payload:{at:session.access_token, rt:session.refresh_token} }), 1500);
+          setTimeout(()=>{ try{ ch.unsubscribe(); }catch(e){} }, 5000);
+        }
+      });
+    }catch(e){ console.warn('broadcast error:', e); }
+  },
+
+  // ====== الكمبيوتر يستمع على القناة السرية بانتظار الجوال
+  _startCrossDeviceWaiting(deviceToken){
+    if(!sb) return;
+    this._stopCrossDeviceWaiting(); // أوقف أي استماع سابق
+    try{
+      const ch = sb.channel(`bsira_xd:${deviceToken}`);
+      App._crossDeviceCh = ch;
+      ch.on('broadcast', {event:'session_ready'}, async ({payload})=>{
+        try{
+          const { data, error } = await sb.auth.setSession({
+            access_token: payload.at,
+            refresh_token: payload.rt,
+          });
+          if(!error && data.session && data.user){
+            this._stopCrossDeviceWaiting();
+            await this.handleAuthenticated(data.user);
+          }
+        }catch(e){ console.warn('setSession error:', e); }
+      });
+      ch.subscribe();
+    }catch(e){ console.warn('realtime channel error:', e); }
+  },
+
+  // ====== أوقف الاستماع على القناة السرية
+  _stopCrossDeviceWaiting(){
+    if(App._crossDeviceCh){
+      try{ App._crossDeviceCh.unsubscribe(); }catch(e){}
+      App._crossDeviceCh = null;
+    }
+  },
+
+  // ====== تسجيل أحداث زر الإرسال (يُستدعى إذا عُدنا للصفحة بعد رابط منتهي الصلاحية)
+  _bindAuthFormHandlers(){
+    const form = document.getElementById('loginForm');
+    if(form._bound) return;
+    form._bound = true;
+    form.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const email = (document.getElementById('loginEmailInput').value || '').trim();
+      const errEl = document.getElementById('loginError');
+      errEl.style.display = 'none';
+      if(!email) return;
+      const btn = document.getElementById('sendOtpBtn');
+      btn.disabled = true; btn.textContent = 'جاري الإرسال...';
+      const dt = this._genDeviceToken();
+      STATE.pendingDeviceToken = dt;
+      const redirectUrl = `${window.location.origin}${window.location.pathname}?dt=${dt}`;
+      const res = await SupabaseService.sendOtp(email, redirectUrl);
+      btn.disabled = false;
+      btn.innerHTML = 'إرسال رابط الدخول <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
+      if(!res.ok){ errEl.textContent = res.error; errEl.style.display = 'block'; return; }
+      STATE.pendingEmail = email;
+      document.getElementById('otpEmailLabel').textContent = email;
+      document.getElementById('loginScreen').style.display = 'none';
+      document.getElementById('otpScreen').style.display = 'flex';
+      this._startCrossDeviceWaiting(dt);
+    });
   },
 
   async handleAuthenticated(user, cachedNameHint){
     STATE.currentUser = { id:user.id, email:user.email };
-    document.getElementById('otpScreen').style.display = 'none';
+    // أخفِ جميع شاشات المصادقة — أياً كانت المعروضة حالياً
+    ['loginScreen','otpScreen','nameCaptureScreen'].forEach(id=>{
+      const el = document.getElementById(id);
+      if(el) el.style.display = 'none';
+    });
     const profile = await SupabaseService.getProfile(user.id);
     STATE.currentProfile = profile;
     const name = (profile && profile.display_name) ? profile.display_name : null;
