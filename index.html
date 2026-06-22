@@ -13,6 +13,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
 /* ============================================================
@@ -145,6 +146,11 @@ h1,h2,h3,h4,h5{font-family:var(--font-display); font-weight:800; letter-spacing:
 .auth-form input{padding:13px 16px; border-radius:12px; border:1px solid var(--border-default); background:var(--bg-sunken); color:var(--text-primary); font-family:inherit; font-size:14px;}
 .auth-form input:focus{outline:none; border-color:var(--c-teal-600); box-shadow:0 0 0 3px var(--c-teal-100);}
 .auth-card--greeting .auth-logo{width:72px; height:72px;}
+.auth-error{font-size:12px; color:var(--c-red); background:var(--c-red-bg); padding:9px 12px; border-radius:10px; text-align:right; line-height:1.7;}
+.auth-note{font-size:11.5px; color:var(--text-tertiary); text-align:center; line-height:1.8;}
+.auth-link{background:none; border:none; color:var(--c-teal-700); font-size:12.5px; font-weight:700; cursor:pointer; padding:4px; text-decoration:underline; text-underline-offset:3px;}
+html[data-theme="dark"] .auth-link{color:var(--c-teal-300);}
+.auth-card--greeting .auth-sub{margin-bottom:24px;}
 .sidebar__user{padding:12px 14px; border-radius:12px; background:var(--bg-sunken); margin-bottom:10px; display:flex; align-items:center; justify-content:space-between; gap:8px;}
 .sidebar__user .name{font-size:12.5px; font-weight:800; color:var(--text-primary); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
 .sidebar__user button{font-size:11px; color:var(--c-teal-700); font-weight:700; flex-shrink:0; background:none; border:none; cursor:pointer; padding:4px 6px;}
@@ -473,6 +479,45 @@ html[data-theme="dark"] .op-card .ic{background:rgba(63,140,140,.18); color:var(
 .op-card .arrow{flex-shrink:0; color:var(--text-tertiary);}
 .op-card .arrow svg{width:16px; height:16px;}
 
+/* ============================== Ticker Bar (شريط الإحصائيات المتحرك) ============================== */
+.ticker-bar{
+  position:fixed; top:0; left:0; right:0; z-index:9000;
+  display:flex; align-items:center; height:36px;
+  background:linear-gradient(90deg,var(--c-ink-900) 0%,var(--c-teal-800,#1f6b6b) 100%);
+  box-shadow:0 1px 8px rgba(0,0,0,.25);
+  overflow:hidden;
+}
+.ticker-label{
+  padding:0 16px; font-size:11px; font-weight:900; color:var(--c-teal-300,#7CBDB9);
+  white-space:nowrap; border-inline-end:1px solid rgba(255,255,255,.12); flex-shrink:0;
+  letter-spacing:.04em;
+}
+.ticker-track{flex:1; overflow:hidden; position:relative;}
+.ticker-inner{
+  display:flex; gap:0; white-space:nowrap;
+  animation:tickerScroll 30s linear infinite;
+  will-change:transform;
+}
+.ticker-inner:hover{ animation-play-state:paused; }
+@keyframes tickerScroll{
+  0%{transform:translateX(0);}
+  100%{transform:translateX(-50%);}
+}
+.ticker-item{
+  display:inline-flex; align-items:center; gap:6px;
+  padding:0 24px; font-size:12px; font-weight:700; color:rgba(255,255,255,.85);
+}
+.ticker-item .sep{color:rgba(255,255,255,.3); margin:0 6px;}
+.ticker-item .val{color:var(--c-teal-300,#7CBDB9); font-weight:900;}
+
+/* إضافة padding للـ app-shell كله ليتراجع أسفل الشريط */
+.app-shell{ padding-top:36px; }
+
+/* ============================== Admin Nav Item ============================== */
+.nav-item--admin{ color:var(--c-teal-600); }
+.nav-item--admin:hover, .nav-item--admin.active{ background:rgba(63,140,140,.15); }
+html[data-theme="dark"] .nav-item--admin{ color:var(--c-teal-400); }
+
 /* ============================== Charts ============================== */
 .charts-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:18px;}
 .chart-card{padding:20px;}
@@ -730,18 +775,58 @@ html[data-theme="dark"] .goal-pill-active:hover{background:var(--c-teal-600); co
 </head>
 <body>
 
-<!-- ============================== شاشة الدخول ============================== -->
+<!-- ============================== شاشة الدخول: البريد الإلكتروني ============================== -->
 <div class="auth-screen" id="loginScreen">
   <div class="auth-card">
     <img class="logo-img auth-logo" alt="شعار متقنون">
     <h1>البصيرة التنفيذية</h1>
     <p class="auth-sub">منصة متقنون لتحفيظ القرآن الكريم بشرق نجران</p>
     <form id="loginForm" class="auth-form">
+      <label>البريد الإلكتروني
+        <input type="email" id="loginEmailInput" placeholder="name@example.com" autocomplete="email" required>
+      </label>
+      <button type="submit" class="btn btn--primary btn--block" id="sendOtpBtn">
+        إرسال رمز التحقق
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </button>
+      <p class="auth-error" id="loginError" style="display:none"></p>
+      <p class="auth-note" id="authUnavailableNote" style="display:none">تعذر الاتصال بالخادم — تحقق من اتصال الإنترنت ثم أعد تحميل الصفحة.</p>
+    </form>
+  </div>
+</div>
+
+<!-- ============================== شاشة الدخول: رمز التحقق OTP ============================== -->
+<div class="auth-screen" id="otpScreen" style="display:none">
+  <div class="auth-card">
+    <img class="logo-img auth-logo" alt="شعار متقنون">
+    <h1>تحقق من بريدك</h1>
+    <p class="auth-sub">أرسلنا رمزاً مكوّناً من 6 أرقام إلى <b id="otpEmailLabel"></b></p>
+    <form id="otpForm" class="auth-form">
+      <label>رمز التحقق
+        <input type="text" id="otpCodeInput" placeholder="000000" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="one-time-code" required>
+      </label>
+      <button type="submit" class="btn btn--primary btn--block" id="verifyOtpBtn">
+        تحقق ودخول
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </button>
+      <p class="auth-error" id="otpError" style="display:none"></p>
+      <button type="button" class="auth-link" id="backToEmailBtn">تغيير البريد الإلكتروني</button>
+    </form>
+  </div>
+</div>
+
+<!-- ============================== شاشة أول دخول: الاسم ============================== -->
+<div class="auth-screen" id="nameCaptureScreen" style="display:none">
+  <div class="auth-card">
+    <img class="logo-img auth-logo" alt="شعار متقنون">
+    <h1>أهلاً بك لأول مرة</h1>
+    <p class="auth-sub">قبل ما نبدأ، وش اسمك؟</p>
+    <form id="nameCaptureForm" class="auth-form">
       <label>اسمك
-        <input type="text" id="loginNameInput" placeholder="اكتب اسمك للمتابعة" maxlength="40" autocomplete="off" required>
+        <input type="text" id="nameCaptureInput" placeholder="اكتب اسمك" maxlength="40" autocomplete="off" required>
       </label>
       <button type="submit" class="btn btn--primary btn--block">
-        دخول
+        متابعة
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
       </button>
     </form>
@@ -752,7 +837,8 @@ html[data-theme="dark"] .goal-pill-active:hover{background:var(--c-teal-600); co
 <div class="auth-screen" id="greetingScreen" style="display:none">
   <div class="auth-card auth-card--greeting">
     <img class="logo-img auth-logo" alt="شعار متقنون">
-    <h2 id="greetingText">مرحباً يا فلان في منصة البصيرة التنفيذية</h2>
+    <h2 id="greetingText">مرحباً فلان 👋</h2>
+    <p class="auth-sub" id="greetingSubText">سعداء بعودتك إلى البصيرة التنفيذية</p>
     <button class="btn btn--primary" id="startWorkBtn">
       ابدأ العمل
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
@@ -761,6 +847,16 @@ html[data-theme="dark"] .goal-pill-active:hover{background:var(--c-teal-600); co
 </div>
 
 <div class="app-shell" style="display:none">
+
+  <!-- ============================== TICKER BAR: شريط الإحصائيات المتحرك ============================== -->
+  <div class="ticker-bar" id="tickerBar" style="display:none">
+    <span class="ticker-label">📊 البصيرة التنفيذية</span>
+    <div class="ticker-track">
+      <div class="ticker-inner" id="tickerInner">
+        <span class="ticker-item">جاري تحميل الإحصائيات...</span>
+      </div>
+    </div>
+  </div>
 
   <!-- ============================== SIDEBAR ============================== -->
   <aside class="sidebar" id="sidebar">
@@ -813,6 +909,10 @@ html[data-theme="dark"] .goal-pill-active:hover{background:var(--c-teal-600); co
       <button class="nav-item" data-view="templates">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
         <span>القوالب الجاهزة</span>
+      </button>
+      <button class="nav-item nav-item--admin" id="navAdminBtn" data-view="admin" style="display:none">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        <span>لوحة الإدارة</span>
       </button>
     </nav>
 
@@ -1159,6 +1259,30 @@ html[data-theme="dark"] .goal-pill-active:hover{background:var(--c-teal-600); co
         <div class="template-grid" id="templatesFullGrid"></div>
       </section>
 
+      <!-- ========= VIEW: ADMIN DASHBOARD ========= -->
+      <section class="view" id="view-admin">
+        <div class="section-head">
+          <div><span class="eyebrow">لوحة المدير</span><h3>نظرة عامة على نشاط المنصة</h3><p>إحصائيات حقيقية محدّثة من Supabase — مرئية للمدير فقط</p></div>
+          <button class="btn btn--ghost btn--sm" id="refreshAdminBtn">تحديث</button>
+        </div>
+        <div class="kpi-grid" id="adminKpiGrid" style="margin-bottom:28px"></div>
+        <div class="section-head"><div><span class="eyebrow">المستخدمون</span><h3>أكثر المستخدمين نشاطاً</h3></div></div>
+        <div class="glass-card" style="padding:20px; margin-bottom:22px">
+          <table class="pr-table" style="width:100%" id="adminTopUsersTable">
+            <thead><tr><th>#</th><th>المستخدم</th><th>عدد التحليلات</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div class="section-head"><div><span class="eyebrow">الأهداف</span><h3>أكثر أهداف التحليل استخداماً</h3></div></div>
+        <div class="glass-card" style="padding:20px; margin-bottom:22px">
+          <div id="adminTopGoalsChart" class="chart-card__canvas-wrap" style="height:200px"><canvas id="chartAdminGoals"></canvas></div>
+        </div>
+        <div class="section-head"><div><span class="eyebrow">النمو الشهري</span><h3>اتجاه استخدام المنصة</h3></div></div>
+        <div class="glass-card" style="padding:20px">
+          <div class="chart-card__canvas-wrap" style="height:220px"><canvas id="chartAdminGrowth"></canvas></div>
+        </div>
+      </section>
+
     </div><!-- /viewsContainer -->
   </div><!-- /main -->
 </div><!-- /app-shell -->
@@ -1301,6 +1425,8 @@ const STATE = {
   detectedType:null, overriddenType:null,
   selectedGoals:['comprehensive'],
   shortlistJobTitle:null, shortlistHeadcount:1,
+  currentUser:null, currentProfile:null, pendingEmail:null,
+  currentSupabaseAnalysisId:null,
   currentOperationId:null,
   selectedAxisName:null,
   primaryMetric:null, primaryCategory:null, primaryTime:null, primaryStatus:null,
@@ -3414,6 +3540,155 @@ const ExportEngine = {
 };
 
 /* ============================================================
+   9.4) SUPABASE SERVICE — الاتصال الحقيقي بقاعدة البيانات
+   كل دالة هنا محاطة بحماية try/catch وترجع قيمة فارغة آمنة عند
+   الفشل (انقطاع إنترنت، سياسة RLS، إلخ) — حتى تبقى المنصة تعمل
+   محلياً بكامل وظائفها حتى لو تعذّر الاتصال بالسحابة لأي سبب
+   ============================================================ */
+const SUPABASE_URL = 'https://aclifhwolczoyekynmrx.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFjbGlmaHdvbGN6b3lla3lubXJ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNjk3MjgsImV4cCI6MjA5NzY0NTcyOH0.FEKHksZA40g10vuw0MMuxOw_M-JbrC0nBRqZhoLHFqQ';
+
+let sb = null;
+try{
+  if(window.supabase && window.supabase.createClient){
+    sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  }
+}catch(err){ console.warn('تعذر تهيئة عميل Supabase:', err); }
+
+const SupabaseService = {
+  isAvailable(){ return !!sb; },
+
+  /* ---------- المصادقة (Auth) عبر بريد إلكتروني + رمز تحقق OTP ---------- */
+  async sendOtp(email){
+    if(!sb) return {ok:false, error:'الاتصال بالخادم غير متاح حالياً'};
+    try{
+      const { error } = await sb.auth.signInWithOtp({ email, options:{ shouldCreateUser:true } });
+      if(error) return {ok:false, error:error.message};
+      return {ok:true};
+    }catch(err){ return {ok:false, error: err.message || 'تعذر إرسال رمز التحقق'}; }
+  },
+
+  async verifyOtp(email, token){
+    if(!sb) return {ok:false, error:'الاتصال بالخادم غير متاح حالياً'};
+    try{
+      const { data, error } = await sb.auth.verifyOtp({ email, token, type:'email' });
+      if(error) return {ok:false, error:error.message};
+      return {ok:true, session:data.session, user:data.user};
+    }catch(err){ return {ok:false, error: err.message || 'رمز التحقق غير صحيح'}; }
+  },
+
+  async getSession(){
+    if(!sb) return null;
+    try{ const { data } = await sb.auth.getSession(); return data.session || null; }
+    catch(err){ return null; }
+  },
+
+  async signOut(){
+    if(!sb) return;
+    try{ await sb.auth.signOut(); }catch(err){ console.warn(err); }
+  },
+
+  onAuthChange(callback){
+    if(!sb) return;
+    try{ sb.auth.onAuthStateChange((event, session)=> callback(event, session)); }
+    catch(err){ console.warn(err); }
+  },
+
+  /* ---------- الملف الشخصي (profiles) ---------- */
+  async getProfile(userId){
+    if(!sb) return null;
+    try{
+      const { data, error } = await sb.from('profiles').select('*').eq('id', userId).maybeSingle();
+      if(error) throw error;
+      return data;
+    }catch(err){ console.warn('تعذر جلب الملف الشخصي:', err); return null; }
+  },
+
+  async setDisplayName(userId, name){
+    if(!sb) return false;
+    try{
+      const { error } = await sb.from('profiles').update({ display_name:name, updated_at:new Date().toISOString() }).eq('id', userId);
+      if(error) throw error;
+      return true;
+    }catch(err){ console.warn('تعذر حفظ الاسم بالملف الشخصي:', err); return false; }
+  },
+
+  /* ---------- التحليلات (analyses) ---------- */
+  async saveAnalysis(record){
+    if(!sb) return null;
+    try{
+      const { data, error } = await sb.from('analyses').insert(record).select().maybeSingle();
+      if(error) throw error;
+      return data;
+    }catch(err){ console.warn('تعذر حفظ التحليل بقاعدة البيانات (سيستمر العمل محلياً):', err); return null; }
+  },
+
+  async listMyAnalyses(userId, limit){
+    if(!sb) return [];
+    try{
+      const { data, error } = await sb.from('analyses')
+        .select('id, created_at, file_name, analysis_type, analysis_goal, axis_name, result_summary, row_count')
+        .eq('user_id', userId)
+        .order('created_at', {ascending:false})
+        .limit(limit || 5);
+      if(error) throw error;
+      return data || [];
+    }catch(err){ console.warn('تعذر جلب سجل العمليات من قاعدة البيانات:', err); return []; }
+  },
+
+  async getAnalysisSnapshot(id){
+    if(!sb) return null;
+    try{
+      const { data, error } = await sb.from('analyses').select('snapshot').eq('id', id).maybeSingle();
+      if(error) throw error;
+      return data ? data.snapshot : null;
+    }catch(err){ console.warn('تعذر استرجاع تفاصيل العملية:', err); return null; }
+  },
+
+  async deleteMyAnalyses(userId){
+    if(!sb) return false;
+    try{
+      const { error } = await sb.from('analyses').delete().eq('user_id', userId);
+      if(error) throw error;
+      return true;
+    }catch(err){ console.warn('تعذر مسح سجل العمليات من قاعدة البيانات:', err); return false; }
+  },
+
+  /* ---------- إحصائيات المنصة (للشريط المتحرك ولوحة المدير) ---------- */
+  async getPlatformStats(){
+    if(!sb) return null;
+    try{
+      const { data, error } = await sb.from('platform_stats').select('*').maybeSingle();
+      if(error) throw error;
+      return data;
+    }catch(err){ console.warn('تعذر جلب إحصائيات المنصة:', err); return null; }
+  },
+
+  async getMonthlyStats(){
+    if(!sb) return [];
+    try{ const { data, error } = await sb.from('platform_monthly_stats').select('*'); if(error) throw error; return data||[]; }
+    catch(err){ console.warn(err); return []; }
+  },
+
+  async getTopGoals(){
+    if(!sb) return [];
+    try{ const { data, error } = await sb.from('platform_top_goals').select('*'); if(error) throw error; return data||[]; }
+    catch(err){ console.warn(err); return []; }
+  },
+
+  async getTopUsers(){
+    if(!sb) return [];
+    try{ const { data, error } = await sb.from('platform_top_users').select('*').order('analyses_count', {ascending:false}); if(error) throw error; return data||[]; }
+    catch(err){ console.warn(err); return []; }
+  },
+
+  async isCurrentUserAdmin(userId){
+    const profile = await this.getProfile(userId);
+    return !!(profile && profile.role === 'admin');
+  },
+};
+
+/* ============================================================
    9.5) AUTH — تعريف بسيط بالاسم محلياً (ليس نظام صلاحيات حقيقي،
    فقط لتخصيص الترحيب وربط سجل العمليات بهذا الجهاز)
    ============================================================ */
@@ -3484,7 +3759,7 @@ const OperationsStore = {
    10) APP CONTROLLER
    ============================================================ */
 const App = {
-  init(){
+  async init(){
     document.querySelectorAll('.logo-img').forEach(img=> img.src = LOGO_SRC);
     this.renderTemplateGrids();
     this.renderGoalGrid();
@@ -3494,49 +3769,235 @@ const App = {
     this.bindChat();
     this.bindButtons();
     this.bindMobileNav();
-    this.initAuth();
+    await this.initAuth();
   },
 
   /* ---------- Auth (تعريف محلي بسيط — وليس نظام صلاحيات) ---------- */
-  initAuth(){
-    document.getElementById('loginForm').addEventListener('submit', (e)=>{
+  async initAuth(){
+    document.getElementById('loginForm').addEventListener('submit', async (e)=>{
       e.preventDefault();
-      const input = document.getElementById('loginNameInput');
-      const name = (input.value || '').trim();
-      if(!name){ showToast('الرجاء كتابة اسمك للمتابعة'); return; }
+      const email = (document.getElementById('loginEmailInput').value || '').trim();
+      const errEl = document.getElementById('loginError');
+      errEl.style.display = 'none';
+      if(!email) return;
+      const btn = document.getElementById('sendOtpBtn');
+      btn.disabled = true;
+      const res = await SupabaseService.sendOtp(email);
+      btn.disabled = false;
+      if(!res.ok){
+        errEl.textContent = res.error || 'تعذر إرسال رمز التحقق، حاول مرة أخرى';
+        errEl.style.display = 'block';
+        return;
+      }
+      STATE.pendingEmail = email;
+      document.getElementById('otpEmailLabel').textContent = email;
+      document.getElementById('loginScreen').style.display = 'none';
+      document.getElementById('otpScreen').style.display = 'flex';
+      document.getElementById('otpCodeInput').focus();
+    });
+
+    document.getElementById('otpForm').addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const code = (document.getElementById('otpCodeInput').value || '').trim();
+      const errEl = document.getElementById('otpError');
+      errEl.style.display = 'none';
+      if(!code) return;
+      const btn = document.getElementById('verifyOtpBtn');
+      btn.disabled = true;
+      const res = await SupabaseService.verifyOtp(STATE.pendingEmail, code);
+      btn.disabled = false;
+      if(!res.ok){
+        errEl.textContent = res.error || 'رمز التحقق غير صحيح أو منتهي الصلاحية';
+        errEl.style.display = 'block';
+        return;
+      }
+      await this.handleAuthenticated(res.user);
+    });
+
+    document.getElementById('backToEmailBtn').addEventListener('click', ()=>{
+      document.getElementById('otpScreen').style.display = 'none';
+      document.getElementById('loginScreen').style.display = 'flex';
+      document.getElementById('otpCodeInput').value = '';
+      document.getElementById('otpError').style.display = 'none';
+    });
+
+    document.getElementById('nameCaptureForm').addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const name = (document.getElementById('nameCaptureInput').value || '').trim();
+      if(!name) return;
+      if(STATE.currentUser){
+        SupabaseService.setDisplayName(STATE.currentUser.id, name);
+        STATE.currentProfile = STATE.currentProfile || {};
+        STATE.currentProfile.display_name = name;
+      }
       Auth.setUsername(name);
       this.showGreeting(name);
     });
+
     document.getElementById('startWorkBtn').addEventListener('click', ()=> this.enterApp());
-    document.getElementById('switchUserBtn').addEventListener('click', ()=>{
+
+    document.getElementById('switchUserBtn').addEventListener('click', async ()=>{
+      await SupabaseService.signOut();
       Auth.clearUsername();
+      STATE.currentUser = null; STATE.currentProfile = null; STATE.pendingEmail = null;
       document.querySelector('.app-shell').style.display = 'none';
-      document.getElementById('loginNameInput').value = '';
-      document.getElementById('loginScreen').style.display = 'flex';
+      document.getElementById('loginEmailInput').value = '';
+      document.getElementById('otpCodeInput').value = '';
+      document.getElementById('otpScreen').style.display = 'none';
       document.getElementById('greetingScreen').style.display = 'none';
+      document.getElementById('nameCaptureScreen').style.display = 'none';
+      document.getElementById('loginScreen').style.display = 'flex';
     });
 
-    const saved = Auth.getUsername();
-    if(saved){
-      this.showGreeting(saved);
+    if(!SupabaseService.isAvailable()){
+      document.getElementById('authUnavailableNote').style.display = 'block';
+      document.getElementById('sendOtpBtn').disabled = true;
+      document.getElementById('loginScreen').style.display = 'flex';
+      return;
+    }
+
+    const cachedName = Auth.getUsername(); // للعرض الفوري بينما نتحقق من الجلسة الحقيقية بالخلفية
+    const session = await SupabaseService.getSession();
+    if(session && session.user){
+      await this.handleAuthenticated(session.user, cachedName);
     } else {
       document.getElementById('loginScreen').style.display = 'flex';
     }
   },
 
+  async handleAuthenticated(user, cachedNameHint){
+    STATE.currentUser = { id:user.id, email:user.email };
+    document.getElementById('otpScreen').style.display = 'none';
+    const profile = await SupabaseService.getProfile(user.id);
+    STATE.currentProfile = profile;
+    const name = (profile && profile.display_name) ? profile.display_name : null;
+    if(name){
+      Auth.setUsername(name);
+      this.showGreeting(name);
+    } else if(cachedNameHint){
+      SupabaseService.setDisplayName(user.id, cachedNameHint);
+      this.showGreeting(cachedNameHint);
+    } else {
+      document.getElementById('loginScreen').style.display = 'none';
+      document.getElementById('nameCaptureScreen').style.display = 'flex';
+    }
+  },
+
   showGreeting(name){
     document.getElementById('loginScreen').style.display = 'none';
-    document.getElementById('greetingText').textContent = `مرحباً يا ${name} في منصة البصيرة التنفيذية`;
+    document.getElementById('otpScreen').style.display = 'none';
+    document.getElementById('nameCaptureScreen').style.display = 'none';
+    document.getElementById('greetingText').textContent = `مرحباً ${name} 👋`;
+    document.getElementById('greetingSubText').textContent = 'سعداء بعودتك إلى البصيرة التنفيذية';
     document.getElementById('greetingScreen').style.display = 'flex';
   },
 
   enterApp(){
-    const name = Auth.getUsername() || 'بك';
+    const name = Auth.getUsername() || (STATE.currentProfile && STATE.currentProfile.display_name) || 'بك';
     document.getElementById('greetingScreen').style.display = 'none';
     document.querySelector('.app-shell').style.display = 'flex';
     document.getElementById('welcomeGreetText').textContent = `مرحباً يا ${name} في منصة البصيرة التنفيذية`;
     document.getElementById('sidebarUserName').textContent = name;
     this.renderOperationsList();
+    this.initTicker();
+    this.checkAdminAccess();
+  },
+
+  /* ---------- شريط الإحصائيات المتحرك ---------- */
+  async initTicker(){
+    const bar = document.getElementById('tickerBar');
+    const inner = document.getElementById('tickerInner');
+    if(!bar || !inner) return;
+    const stats = await SupabaseService.getPlatformStats();
+    if(!stats){ bar.style.display='none'; return; }
+    bar.style.display = 'flex';
+    const fmtDate = (iso)=>{ if(!iso) return '—'; try{ return new Date(iso).toLocaleDateString('ar-SA',{year:'numeric',month:'short',day:'numeric'}); }catch(e){return '—';} };
+    const items = [
+      `<span class="ticker-item">📊 إجمالي التحليلات: <span class="val">${fmtNum(stats.total_analyses || 0)}</span></span>`,
+      `<span class="ticker-item">📁 إجمالي الملفات: <span class="val">${fmtNum(stats.total_files || 0)}</span></span>`,
+      `<span class="ticker-item">🎯 إجمالي التوصيات: <span class="val">${fmtNum(stats.total_recommendations || 0)}</span></span>`,
+      `<span class="ticker-item">👥 عدد المستخدمين: <span class="val">${fmtNum(stats.total_users || 0)}</span></span>`,
+      `<span class="ticker-item">🕐 آخر نشاط: <span class="val">${fmtDate(stats.last_activity_at)}</span></span>`,
+    ].join('<span class="ticker-item sep">•</span>');
+    // مضاعفة المحتوى لخلق تأثير حلقي متصل — هذا هو النمط القياسي للـ ticker
+    inner.innerHTML = items + items;
+  },
+
+  /* ---------- التحقق من صلاحية المدير وإظهار/إخفاء عناصره ---------- */
+  async checkAdminAccess(){
+    if(!STATE.currentUser || !STATE.currentUser.id) return;
+    const isAdmin = await SupabaseService.isCurrentUserAdmin(STATE.currentUser.id);
+    const btn = document.getElementById('navAdminBtn');
+    if(btn) btn.style.display = isAdmin ? '' : 'none';
+  },
+
+  /* ---------- لوحة الإدارة ---------- */
+  async renderAdminDashboard(){
+    const kpiGrid = document.getElementById('adminKpiGrid');
+    if(!kpiGrid) return;
+    kpiGrid.innerHTML = '<div class="kpi-card glass-card" style="grid-column:1/-1;padding:14px;text-align:center;color:var(--text-tertiary);font-size:13px;">جاري تحميل الإحصائيات...</div>';
+
+    const [stats, topUsers, topGoals, monthlyStats] = await Promise.all([
+      SupabaseService.getPlatformStats(),
+      SupabaseService.getTopUsers(),
+      SupabaseService.getTopGoals(),
+      SupabaseService.getMonthlyStats(),
+    ]);
+
+    // KPIs الرئيسية للوحة الإدارة
+    const kpis = [
+      {label:'إجمالي التحليلات', value: stats ? fmtNum(stats.total_analyses||0) : '—', icon:'metric'},
+      {label:'إجمالي المستخدمين', value: stats ? fmtNum(stats.total_users||0) : '—', icon:'rows'},
+      {label:'إجمالي الملفات', value: stats ? fmtNum(stats.total_files||0) : '—', icon:'status'},
+      {label:'إجمالي التوصيات', value: stats ? fmtNum(stats.total_recommendations||0) : '—', icon:'metric'},
+    ];
+    kpiGrid.innerHTML = kpis.map(k=>`<div class="glass-card kpi-card">
+      <div class="kpi-card__top"><div class="kpi-card__icon">${this.kpiIcon(k.icon)}</div></div>
+      <div class="kpi-card__value" style="direction:rtl;font-size:22px">${k.value}</div>
+      <div class="kpi-card__label">${escapeHtml(k.label)}</div>
+    </div>`).join('');
+
+    // جدول أكثر المستخدمين نشاطاً
+    const tbody = document.querySelector('#adminTopUsersTable tbody');
+    if(tbody){
+      tbody.innerHTML = topUsers.length
+        ? topUsers.slice(0,10).map((u,i)=>`<tr><td>${i+1}</td><td>${escapeHtml(u.user_label)}</td><td>${fmtNum(u.analyses_count)}</td></tr>`).join('')
+        : '<tr><td colspan="3" style="text-align:center;color:var(--text-tertiary)">لا توجد بيانات بعد</td></tr>';
+    }
+
+    // رسم أهداف التحليل الأكثر استخداماً
+    if(topGoals.length){
+      const c = ChartEngine.baseOptions();
+      ChartEngine.destroy('chartAdminGoals');
+      const ctx = document.getElementById('chartAdminGoals').getContext('2d');
+      const goalNames = {}; (this.goalsList()||[]).forEach(g=> goalNames[g.key]=g.label);
+      STATE.charts['chartAdminGoals'] = new Chart(ctx, {
+        type:'bar',
+        data:{
+          labels: topGoals.map(g=> goalNames[g.goal] || g.goal),
+          datasets:[{data: topGoals.map(g=>g.uses), backgroundColor:c.teal600, borderRadius:6}]
+        },
+        options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{x:{grid:{display:false}},y:{grid:{color:c.grid},beginAtZero:true}}}
+      });
+    }
+
+    // رسم النمو الشهري
+    if(monthlyStats.length){
+      const c = ChartEngine.baseOptions();
+      ChartEngine.destroy('chartAdminGrowth');
+      const ctx2 = document.getElementById('chartAdminGrowth').getContext('2d');
+      const sorted = [...monthlyStats].sort((a,b)=> a.month>b.month?1:-1);
+      STATE.charts['chartAdminGrowth'] = new Chart(ctx2, {
+        type:'line',
+        data:{
+          labels: sorted.map(m=> m.month),
+          datasets:[{label:'عدد التحليلات', data:sorted.map(m=>m.analyses_count), borderColor:c.teal600, backgroundColor:'rgba(63,140,140,.1)', fill:true, tension:.35, pointRadius:4}]
+        },
+        options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{x:{grid:{display:false}},y:{grid:{color:c.grid},beginAtZero:true}}}
+      });
+    }
+
+    if(!stats) showToast('تحتاج صلاحية مدير لرؤية هذه البيانات');
   },
 
   /* ---------- Navigation ---------- */
@@ -3551,6 +4012,7 @@ const App = {
           return;
         }
         if(view === 'operations') this.renderOperationsList();
+        if(view === 'admin') this.renderAdminDashboard();
         this.goTo(view);
       });
     });
@@ -3561,7 +4023,8 @@ const App = {
     document.querySelectorAll('.view').forEach(v=> v.classList.toggle('active', v.id==='view-'+view));
     const titles = {
       welcome:['البداية وتحميل الملف','حوّل أي ملف Excel إلى تحليل ذكي وقرارات تنفيذية خلال ثوانٍ'],
-      operations:['آخر العمليات','سجل محلي بآخر 5 تحليلات على هذا الجهاز'],
+      operations:['آخر العمليات','سجل التحليلات المحفوظة لحسابك'],
+      admin:['لوحة الإدارة','إحصائيات حقيقية من Supabase — مرئية للمدير فقط'],
       analyzing:['جاري التحليل...', 'يرجى الانتظار قليلاً'],
       confirm:['تأكيد الفهم','راجع كيف فهمت البصيرة بياناتك قبل المتابعة'],
       goal:['تحديد الهدف','اختر هدفك من هذا التحليل'],
@@ -3733,6 +4196,7 @@ Object.assign(App, {
     STATE.shortlistJobTitle = null;
     STATE.shortlistHeadcount = 1;
     STATE.currentOperationId = null;
+    STATE.currentSupabaseAnalysisId = null;
   },
 
   async handleFile(file){
@@ -3907,6 +4371,7 @@ Object.assign(App, {
     document.getElementById('shortlistHeadcountInput').addEventListener('keydown', (e)=>{ if(e.key==='Enter') this.applyShortlistControls(); });
 
     document.getElementById('clearOperationsBtn').addEventListener('click', ()=> this.clearOperations());
+    document.getElementById('refreshAdminBtn').addEventListener('click', ()=> this.renderAdminDashboard());
 
     document.getElementById('exportPdfBtn').addEventListener('click', ()=> ExportEngine.exportPDF());
     document.getElementById('exportExcelBtn').addEventListener('click', ()=> ExportEngine.exportExcel());
@@ -4227,67 +4692,112 @@ Object.assign(App, {
   saveCurrentOperation(){
     try{
       const name = this.buildOperationName();
-      const id = OperationsStore.add(name, this.buildOperationSnapshot());
-      STATE.currentOperationId = id;
-    }catch(err){ console.warn('تعذر حفظ هذه العملية بالسجل المحلي:', err); }
+      const snap = this.buildOperationSnapshot();
+      const localId = OperationsStore.add(name, snap);
+      STATE.currentOperationId = localId;
+      if(SupabaseService.isAvailable() && STATE.currentUser){
+        const a = STATE.analysis;
+        const record = {
+          user_id: STATE.currentUser.id,
+          file_name: STATE.fileName || '—',
+          analysis_type: a ? this.typeLabel(a.fileType) : '—',
+          analysis_goal: (STATE.selectedGoals||[]).join(','),
+          axis_name: STATE.selectedAxisName || null,
+          row_count: STATE.cleanRows ? STATE.cleanRows.length : 0,
+          kpi_count: a && a.kpis ? a.kpis.length : 0,
+          recommendations_count: a && a.decision
+            ? ((a.decision.urgent||[]).length+(a.decision.intervene||[]).length+(a.decision.monitor||[]).length+(a.decision.excellent||[]).length) : 0,
+          result_summary: a && a.insights && a.insights.length ? (a.insights[0].title+': '+(a.insights[0].text||'').replace(/<[^>]+>/g,'').slice(0,150)) : null,
+          user_name: Auth.getUsername() || null,
+          snapshot: snap,
+        };
+        SupabaseService.saveAnalysis(record).then(saved=>{ if(saved) STATE.currentSupabaseAnalysisId = saved.id; });
+      }
+    }catch(err){ console.warn('تعذر حفظ العملية:', err); }
   },
 
-  // يحدّث لقطة العملية الحالية في السجل المحلي (محورها/أهدافها/إعدادات ترشيحها) كلما
-  // غيّر المستخدم شيئاً أثناء الاستكشاف — حتى يعكس "آخر العمليات" آخر حالة شاهدها فعلياً
   updateCurrentOperationSnapshot(){
     if(!STATE.currentOperationId) return;
-    try{ OperationsStore.update(STATE.currentOperationId, this.buildOperationSnapshot()); }
-    catch(err){ console.warn('تعذر تحديث سجل العملية الحالية:', err); }
+    try{
+      const snap = this.buildOperationSnapshot();
+      OperationsStore.update(STATE.currentOperationId, snap);
+      if(SupabaseService.isAvailable() && STATE.currentSupabaseAnalysisId){
+        sb && sb.from('analyses')
+          .update({ snapshot:snap, axis_name:STATE.selectedAxisName||null, analysis_goal:(STATE.selectedGoals||[]).join(','), updated_at:new Date().toISOString() })
+          .eq('id', STATE.currentSupabaseAnalysisId).then(()=>{}).catch(err=> console.warn('updateSnapshot:', err));
+      }
+    }catch(err){ console.warn('تعذر تحديث سجل العملية:', err); }
   },
 
-  renderOperationsList(){
+  async renderOperationsList(){
     const listEl = document.getElementById('operationsList');
     if(!listEl) return;
-    const ops = OperationsStore.load();
+    listEl.innerHTML = `<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 3"/></svg><h4>جاري التحميل...</h4></div>`;
+    let ops = [];
+    if(SupabaseService.isAvailable() && STATE.currentUser){
+      const remote = await SupabaseService.listMyAnalyses(STATE.currentUser.id, 5);
+      if(remote && remote.length){
+        ops = remote.map(r=>({ id:r.id, isRemote:true, timestamp:r.created_at,
+          name:`${r.analysis_type||'تحليل'} — ${r.file_name||'—'}`,
+          meta:`${r.analysis_goal?r.analysis_goal.replace(/,/g,' + '):'تحليل شامل'} | ${r.row_count?fmtNum(r.row_count)+' سجل':''}` }));
+      }
+    }
     if(!ops.length){
-      listEl.innerHTML = `<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 3"/></svg><h4>لا توجد عمليات سابقة بعد</h4><p>أي ملف تحلله بنجاح يُحفظ هنا تلقائياً على هذا الجهاز — حتى آخر 5 عمليات</p></div>`;
+      const local = OperationsStore.load();
+      ops = local.map(o=>({ id:o.id, isRemote:false, timestamp:o.timestamp, name:o.name, meta:'' }));
+    }
+    if(!ops.length){
+      listEl.innerHTML = `<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 3"/></svg><h4>لا توجد عمليات سابقة بعد</h4><p>أي ملف تحلله بنجاح يُحفظ هنا تلقائياً</p></div>`;
+      const clearBtn = document.getElementById('clearOperationsBtn');
+      if(clearBtn) clearBtn.style.display = 'none';
       return;
     }
     listEl.innerHTML = ops.map(op=>{
       const d = new Date(op.timestamp);
       const when = d.toLocaleString('ar-SA', {year:'numeric', month:'long', day:'numeric', hour:'2-digit', minute:'2-digit'});
-      return `<div class="op-card" data-op-id="${op.id}">
+      const badge = op.isRemote ? '<span style="font-size:10px;padding:2px 7px;border-radius:99px;background:var(--c-teal-100);color:var(--c-teal-700);font-weight:800;">☁️ Supabase</span>' : '<span style="font-size:10px;padding:2px 7px;border-radius:99px;background:var(--bg-sunken);color:var(--text-tertiary);font-weight:700;">محلي</span>';
+      return `<div class="op-card" data-op-id="${op.id}" data-remote="${op.isRemote?'1':'0'}">
         <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg></div>
-        <div class="op-card__body"><h5>${escapeHtml(op.name)}</h5><span>${escapeHtml(when)}</span></div>
+        <div class="op-card__body"><h5>${escapeHtml(op.name)} ${badge}</h5><span>${escapeHtml(when)}${op.meta?' • '+escapeHtml(op.meta):''}</span></div>
         <div class="arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 17l-5-5 5-5M18 17l-5-5 5-5"/></svg></div>
       </div>`;
     }).join('');
     listEl.querySelectorAll('.op-card').forEach(card=>{
-      card.addEventListener('click', ()=> this.restoreOperation(card.dataset.opId));
+      card.addEventListener('click', ()=> this.restoreOperation(card.dataset.opId, card.dataset.remote==='1'));
     });
-
     const clearBtn = document.getElementById('clearOperationsBtn');
-    if(clearBtn) clearBtn.style.display = ops.length ? '' : 'none';
+    if(clearBtn) clearBtn.style.display = '';
   },
 
-  restoreOperation(opId){
-    const ops = OperationsStore.load();
-    const op = ops.find(o=> o.id===opId);
-    if(!op){ showToast('تعذر العثور على هذه العملية — قد تكون حُذفت'); return; }
-    const s = op.snapshot;
-    if(!s || !s.cleanRows || !s.cleanRows.length){ showToast('بيانات هذه العملية غير مكتملة'); return; }
-
-    STATE.fileName = s.fileName; STATE.fileSheets = s.fileSheets;
-    STATE.cleanRows = s.cleanRows; STATE.columns = s.columns; STATE.headers = s.headers; STATE.formatHints = s.formatHints || {};
-    STATE.detectedType = s.detectedType; STATE.overriddenType = s.overriddenType;
-    STATE.selectedAxisName = s.selectedAxisName;
-    STATE.selectedGoals = (s.selectedGoals && s.selectedGoals.length) ? s.selectedGoals : ['comprehensive'];
-    STATE.shortlistJobTitle = s.shortlistJobTitle; STATE.shortlistHeadcount = s.shortlistHeadcount || 1;
-    STATE.currentOperationId = op.id;
-
+  async restoreOperation(opId, isRemote){
+    let snapshot = null;
+    if(isRemote){
+      showToast('جاري الاسترجاع من Supabase...');
+      snapshot = await SupabaseService.getAnalysisSnapshot(opId);
+    }
+    if(!snapshot){
+      const op = OperationsStore.load().find(o=> String(o.id)===String(opId));
+      if(op) snapshot = op.snapshot;
+    }
+    if(!snapshot || !snapshot.cleanRows || !snapshot.cleanRows.length){ showToast('تعذر استرجاع البيانات الكاملة لهذه العملية'); return; }
+    const s = snapshot;
+    STATE.fileName=s.fileName; STATE.fileSheets=s.fileSheets;
+    STATE.cleanRows=s.cleanRows; STATE.columns=s.columns; STATE.headers=s.headers; STATE.formatHints=s.formatHints||{};
+    STATE.detectedType=s.detectedType; STATE.overriddenType=s.overriddenType;
+    STATE.selectedAxisName=s.selectedAxisName;
+    STATE.selectedGoals=(s.selectedGoals&&s.selectedGoals.length)?s.selectedGoals:['comprehensive'];
+    STATE.shortlistJobTitle=s.shortlistJobTitle; STATE.shortlistHeadcount=s.shortlistHeadcount||1;
+    STATE.currentOperationId = isRemote ? null : opId;
+    STATE.currentSupabaseAnalysisId = isRemote ? opId : null;
     this.rebuildAnalysisFromState(STATE.selectedAxisName);
-    showToast('تم استرجاع العملية بالكامل من السجل المحلي');
+    showToast('تم استرجاع العملية بالكامل');
   },
 
-  clearOperations(){
+  async clearOperations(){
+    if(SupabaseService.isAvailable() && STATE.currentUser) await SupabaseService.deleteMyAnalyses(STATE.currentUser.id);
     OperationsStore.clear();
     this.renderOperationsList();
-    showToast('تم مسح سجل العمليات المحلي');
+    showToast('تم مسح سجل العمليات');
   },
 
   updateAlertBadge(){
