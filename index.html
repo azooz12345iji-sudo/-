@@ -3665,7 +3665,65 @@ const SupabaseService = {
       const { error } = await sb.from('analyses').delete().eq('user_id', userId);
       if(error) throw error;
       return true;
-    }catch(err){ console.warn('تعذر مسح سجل العمليات من قاعدة البيانات:', err); return false; }
+    }catch(err){ console.warn('تعذر مسح سجل التحليلات من قاعدة البيانات:', err); return false; }
+  },
+
+  /* ---------- جدول operations (ميزة "آخر العمليات") ---------- */
+  async saveOperation(record){
+    if(!sb) return null;
+    try{
+      const { data, error } = await sb.from('operations').insert(record).select('id').maybeSingle();
+      if(error) throw error;
+      return data;
+    }catch(err){ console.warn('تعذر حفظ العملية في Supabase (العمل يستمر محلياً):', err); return null; }
+  },
+
+  async listMyOperations(userId, limit){
+    if(!sb) return [];
+    try{
+      const { data, error } = await sb
+        .from('operations')
+        .select('id, created_at, name, file_name, analysis_type, analysis_goal')
+        .eq('user_id', userId)
+        .order('created_at', {ascending:false})
+        .limit(limit || 5);
+      if(error) throw error;
+      return data || [];
+    }catch(err){ console.warn('تعذر جلب العمليات من Supabase:', err); return []; }
+  },
+
+  async getOperationSnapshot(id){
+    if(!sb) return null;
+    try{
+      const { data, error } = await sb
+        .from('operations')
+        .select('snapshot')
+        .eq('id', id)
+        .maybeSingle();
+      if(error) throw error;
+      return data ? data.snapshot : null;
+    }catch(err){ console.warn('تعذر استرجاع لقطة العملية من Supabase:', err); return null; }
+  },
+
+  async updateOperationSnapshot(id, snapshot, goal){
+    if(!sb || !id) return false;
+    try{
+      const { error } = await sb
+        .from('operations')
+        .update({ snapshot, analysis_goal: goal || null })
+        .eq('id', id);
+      if(error) throw error;
+      return true;
+    }catch(err){ console.warn('تعذر تحديث لقطة العملية في Supabase:', err); return false; }
+  },
+
+  async deleteMyOperations(userId){
+    if(!sb) return false;
+    try{
+      const { error } = await sb.from('operations').delete().eq('user_id', userId);
+      if(error) throw error;
+      return true;
+    }catch(err){ console.warn('تعذر مسح العمليات من Supabase:', err); return false; }
   },
 
   /* ---------- إحصائيات المنصة (للشريط المتحرك ولوحة المدير) ---------- */
@@ -3724,7 +3782,9 @@ const Auth = {
    لقطة كاملة (بيانات + تصنيف + نتائج التحليل) تتيح استرجاع
    العملية بالكامل لاحقاً دون الحاجة لرفع الملف من جديد
    ============================================================ */
-const OPERATIONS_KEY = 'bsira_operations';
+// مفتاح عام قديم (قبل ربط العمليات بالمستخدم) — يُستخدم فقط لمسحه عند أول تسجيل دخول
+const OPERATIONS_KEY_LEGACY = 'bsira_operations';
+
 function _dateReplacer(key, value){
   if(value instanceof Date) return {__isDate:true, iso:value.toISOString()};
   return value;
@@ -3733,41 +3793,58 @@ function _dateReviver(key, value){
   if(value && typeof value==='object' && value.__isDate) return new Date(value.iso);
   return value;
 }
+
+// OperationsStore: Cache محلي مؤقت فقط — Supabase هو المصدر الرئيسي
+// كل مستخدم له مفتاح منفصل في localStorage حتى لا تتداخل بيانات المستخدمين على نفس الجهاز
 const OperationsStore = {
-  load(){
+  _key(userId){ return userId ? `bsira_ops_${String(userId).slice(0,16)}` : 'bsira_ops_anon'; },
+
+  load(userId){
     try{
-      const raw = localStorage.getItem(OPERATIONS_KEY);
+      const raw = localStorage.getItem(this._key(userId));
       if(!raw) return [];
       const parsed = JSON.parse(raw, _dateReviver);
       return Array.isArray(parsed) ? parsed : [];
-    }catch(e){ console.warn('تعذر قراءة سجل العمليات المحلي:', e); return []; }
+    }catch(e){ return []; }
   },
-  _save(ops){
-    try{ localStorage.setItem(OPERATIONS_KEY, JSON.stringify(ops, _dateReplacer)); return true; }
-    catch(e){ console.warn('تعذر حفظ سجل العمليات (قد تكون المساحة المحلية ممتلئة):', e); return false; }
-  },
-  add(name, snapshot){
-    let ops = this.load();
-    const op = { id:'op_'+Date.now()+'_'+Math.random().toString(36).slice(2,7), name, timestamp:new Date().toISOString(), snapshot };
-    ops.unshift(op);
-    ops = ops.slice(0,5);
-    let ok = this._save(ops);
-    while(!ok && ops.length>1){
-      ops.pop(); // قلّص السجل تدريجياً إذا فشل الحفظ بسبب امتلاء المساحة المحلية، دون تعطيل التطبيق
-      ok = this._save(ops);
+
+  _save(userId, ops){
+    try{
+      localStorage.setItem(this._key(userId), JSON.stringify(ops.slice(0,5), _dateReplacer));
+      return true;
+    }catch(e){
+      // المساحة المحلية ممتلئة — احذف أقدم عملية وحاول مجدداً
+      if(ops.length > 1){ ops.pop(); return this._save(userId, ops); }
+      return false;
     }
-    return ok ? op.id : null;
   },
-  update(id, snapshot){
-    if(!id) return false;
-    let ops = this.load();
-    const idx = ops.findIndex(o=> o.id===id);
+
+  add(userId, name, snapshot){
+    let ops = this.load(userId);
+    const op = {
+      id: 'op_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),
+      name, timestamp: new Date().toISOString(), snapshot
+    };
+    ops.unshift(op);
+    this._save(userId, ops.slice(0,5));
+    return op.id;
+  },
+
+  update(userId, opId, snapshot){
+    if(!opId) return false;
+    let ops = this.load(userId);
+    const idx = ops.findIndex(o=> o.id===opId);
     if(idx===-1) return false;
     ops[idx].snapshot = snapshot;
-    return this._save(ops);
+    return this._save(userId, ops);
   },
-  clear(){ try{ localStorage.removeItem(OPERATIONS_KEY); }catch(e){} },
+
+  clear(userId){ try{ localStorage.removeItem(this._key(userId)); }catch(e){} },
+
+  // مسح البيانات القديمة (غير مرتبطة بمستخدم) — يُستدعى عند أول دخول بعد التحديث
+  clearLegacy(){ try{ localStorage.removeItem(OPERATIONS_KEY_LEGACY); }catch(e){} },
 };
+
 
 /* ============================================================
    10) APP CONTROLLER
@@ -4012,6 +4089,8 @@ const App = {
 
   async handleAuthenticated(user, cachedNameHint){
     STATE.currentUser = { id:user.id, email:user.email };
+    // مسح البيانات القديمة غير المرتبطة بمستخدم (ما قبل التحديث) — مرة واحدة بصمت
+    OperationsStore.clearLegacy();
     // أخفِ جميع شاشات المصادقة — أياً كانت المعروضة حالياً
     ['loginScreen','otpScreen','nameCaptureScreen'].forEach(id=>{
       const el = document.getElementById(id);
@@ -4345,6 +4424,7 @@ Object.assign(App, {
     STATE.shortlistJobTitle = null;
     STATE.shortlistHeadcount = 1;
     STATE.currentOperationId = null;
+    STATE.currentSupabaseOperationId = null;
     STATE.currentSupabaseAnalysisId = null;
   },
 
@@ -4840,14 +4920,39 @@ Object.assign(App, {
 
   saveCurrentOperation(){
     try{
+      const userId = STATE.currentUser ? STATE.currentUser.id : null;
       const name = this.buildOperationName();
       const snap = this.buildOperationSnapshot();
-      const localId = OperationsStore.add(name, snap);
+
+      // 1) localStorage كـ cache مؤقت مرتبط بالمستخدم
+      const localId = OperationsStore.add(userId, name, snap);
       STATE.currentOperationId = localId;
-      if(SupabaseService.isAvailable() && STATE.currentUser){
+
+      // 2) Supabase جدول operations (المصدر الرئيسي)
+      if(SupabaseService.isAvailable() && userId){
         const a = STATE.analysis;
         const record = {
-          user_id: STATE.currentUser.id,
+          user_id: userId,
+          name,
+          file_name: STATE.fileName || '—',
+          analysis_type: a ? this.typeLabel(a.fileType) : '—',
+          analysis_goal: (STATE.selectedGoals||[]).join(','),
+          snapshot: snap,
+        };
+        SupabaseService.saveOperation(record).then(saved=>{
+          if(saved){
+            STATE.currentSupabaseOperationId = saved.id;
+            // تحديث الشريط الإحصائي بعد حفظ العملية في Supabase
+            this.initTicker();
+          }
+        });
+      }
+
+      // 3) حفظ إضافي في جدول analyses لإحصائيات لوحة الإدارة
+      if(SupabaseService.isAvailable() && userId){
+        const a = STATE.analysis;
+        const record = {
+          user_id: userId,
           file_name: STATE.fileName || '—',
           analysis_type: a ? this.typeLabel(a.fileType) : '—',
           analysis_goal: (STATE.selectedGoals||[]).join(','),
@@ -4856,11 +4961,13 @@ Object.assign(App, {
           kpi_count: a && a.kpis ? a.kpis.length : 0,
           recommendations_count: a && a.decision
             ? ((a.decision.urgent||[]).length+(a.decision.intervene||[]).length+(a.decision.monitor||[]).length+(a.decision.excellent||[]).length) : 0,
-          result_summary: a && a.insights && a.insights.length ? (a.insights[0].title+': '+(a.insights[0].text||'').replace(/<[^>]+>/g,'').slice(0,150)) : null,
+          result_summary: a && a.insights && a.insights.length
+            ? (a.insights[0].title+': '+(a.insights[0].text||'').replace(/<[^>]+>/g,'').slice(0,150)) : null,
           user_name: Auth.getUsername() || null,
-          snapshot: snap,
         };
-        SupabaseService.saveAnalysis(record).then(saved=>{ if(saved) STATE.currentSupabaseAnalysisId = saved.id; });
+        SupabaseService.saveAnalysis(record).then(saved=>{
+          if(saved) STATE.currentSupabaseAnalysisId = saved.id;
+        });
       }
     }catch(err){ console.warn('تعذر حفظ العملية:', err); }
   },
@@ -4868,49 +4975,69 @@ Object.assign(App, {
   updateCurrentOperationSnapshot(){
     if(!STATE.currentOperationId) return;
     try{
+      const userId = STATE.currentUser ? STATE.currentUser.id : null;
       const snap = this.buildOperationSnapshot();
-      OperationsStore.update(STATE.currentOperationId, snap);
-      if(SupabaseService.isAvailable() && STATE.currentSupabaseAnalysisId){
-        sb && sb.from('analyses')
-          .update({ snapshot:snap, axis_name:STATE.selectedAxisName||null, analysis_goal:(STATE.selectedGoals||[]).join(','), updated_at:new Date().toISOString() })
-          .eq('id', STATE.currentSupabaseAnalysisId).then(()=>{}).catch(err=> console.warn('updateSnapshot:', err));
+      const goal = (STATE.selectedGoals||[]).join(',');
+
+      // تحديث localStorage cache
+      if(userId) OperationsStore.update(userId, STATE.currentOperationId, snap);
+
+      // تحديث Supabase operations (بدون انتظار — fire-and-forget)
+      if(SupabaseService.isAvailable() && STATE.currentSupabaseOperationId){
+        SupabaseService.updateOperationSnapshot(STATE.currentSupabaseOperationId, snap, goal);
       }
-    }catch(err){ console.warn('تعذر تحديث سجل العملية:', err); }
+    }catch(err){ console.warn('تعذر تحديث لقطة العملية:', err); }
   },
 
   async renderOperationsList(){
     const listEl = document.getElementById('operationsList');
     if(!listEl) return;
     listEl.innerHTML = `<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 3"/></svg><h4>جاري التحميل...</h4></div>`;
+
+    const userId = STATE.currentUser ? STATE.currentUser.id : null;
     let ops = [];
-    if(SupabaseService.isAvailable() && STATE.currentUser){
-      const remote = await SupabaseService.listMyAnalyses(STATE.currentUser.id, 5);
+
+    // Supabase هو المصدر الرئيسي للمستخدمين المسجّلين
+    if(SupabaseService.isAvailable() && userId){
+      const remote = await SupabaseService.listMyOperations(userId, 5);
       if(remote && remote.length){
-        ops = remote.map(r=>({ id:r.id, isRemote:true, timestamp:r.created_at,
-          name:`${r.analysis_type||'تحليل'} — ${r.file_name||'—'}`,
-          meta:`${r.analysis_goal?r.analysis_goal.replace(/,/g,' + '):'تحليل شامل'} | ${r.row_count?fmtNum(r.row_count)+' سجل':''}` }));
+        ops = remote.map(r=>({
+          id: r.id, isRemote: true, timestamp: r.created_at,
+          name: r.name || `${r.analysis_type||'تحليل'} — ${r.file_name||'—'}`,
+          meta: r.analysis_goal ? r.analysis_goal.replace(/,/g, ' + ') : 'تحليل شامل',
+        }));
       }
     }
-    if(!ops.length){
-      const local = OperationsStore.load();
+
+    // localStorage كـ fallback فقط (عند انقطاع الإنترنت أو قبل مزامنة Supabase)
+    if(!ops.length && userId){
+      const local = OperationsStore.load(userId);
       ops = local.map(o=>({ id:o.id, isRemote:false, timestamp:o.timestamp, name:o.name, meta:'' }));
     }
+
     if(!ops.length){
-      listEl.innerHTML = `<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 3"/></svg><h4>لا توجد عمليات سابقة بعد</h4><p>أي ملف تحلله بنجاح يُحفظ هنا تلقائياً</p></div>`;
+      listEl.innerHTML = `<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 3"/></svg><h4>لا توجد عمليات سابقة بعد</h4><p>أي ملف تحلله بنجاح يُحفظ هنا تلقائياً مرتبطاً بحسابك</p></div>`;
       const clearBtn = document.getElementById('clearOperationsBtn');
       if(clearBtn) clearBtn.style.display = 'none';
       return;
     }
+
     listEl.innerHTML = ops.map(op=>{
       const d = new Date(op.timestamp);
       const when = d.toLocaleString('ar-SA', {year:'numeric', month:'long', day:'numeric', hour:'2-digit', minute:'2-digit'});
-      const badge = op.isRemote ? '<span style="font-size:10px;padding:2px 7px;border-radius:99px;background:var(--c-teal-100);color:var(--c-teal-700);font-weight:800;">☁️ Supabase</span>' : '<span style="font-size:10px;padding:2px 7px;border-radius:99px;background:var(--bg-sunken);color:var(--text-tertiary);font-weight:700;">محلي</span>';
-      return `<div class="op-card" data-op-id="${op.id}" data-remote="${op.isRemote?'1':'0'}">
+      const badge = op.isRemote
+        ? '<span style="font-size:10px;padding:2px 7px;border-radius:99px;background:var(--c-teal-100);color:var(--c-teal-700);font-weight:800;">☁️ Supabase</span>'
+        : '<span style="font-size:10px;padding:2px 7px;border-radius:99px;background:var(--bg-sunken);color:var(--text-tertiary);font-weight:700;">📱 محلي</span>';
+      return `<div class="op-card" data-op-id="${escapeHtml(op.id)}" data-remote="${op.isRemote?'1':'0'}">
         <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg></div>
-        <div class="op-card__body"><h5>${escapeHtml(op.name)} ${badge}</h5><span>${escapeHtml(when)}${op.meta?' • '+escapeHtml(op.meta):''}</span></div>
+        <div class="op-card__body">
+          <h5>${escapeHtml(op.name)} ${badge}</h5>
+          <span>${escapeHtml(when)}${op.meta ? ' • '+escapeHtml(op.meta) : ''}</span>
+        </div>
         <div class="arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 17l-5-5 5-5M18 17l-5-5 5-5"/></svg></div>
       </div>`;
     }).join('');
+
     listEl.querySelectorAll('.op-card').forEach(card=>{
       card.addEventListener('click', ()=> this.restoreOperation(card.dataset.opId, card.dataset.remote==='1'));
     });
@@ -4920,31 +5047,47 @@ Object.assign(App, {
 
   async restoreOperation(opId, isRemote){
     let snapshot = null;
-    if(isRemote){
-      showToast('جاري الاسترجاع من Supabase...');
-      snapshot = await SupabaseService.getAnalysisSnapshot(opId);
+
+    if(isRemote && SupabaseService.isAvailable()){
+      showToast('جاري استرجاع العملية من Supabase...');
+      snapshot = await SupabaseService.getOperationSnapshot(opId);
     }
+
+    // fallback: localStorage cache
     if(!snapshot){
-      const op = OperationsStore.load().find(o=> String(o.id)===String(opId));
+      const userId = STATE.currentUser ? STATE.currentUser.id : null;
+      const local = OperationsStore.load(userId);
+      const op = local.find(o=> String(o.id)===String(opId));
       if(op) snapshot = op.snapshot;
     }
-    if(!snapshot || !snapshot.cleanRows || !snapshot.cleanRows.length){ showToast('تعذر استرجاع البيانات الكاملة لهذه العملية'); return; }
+
+    if(!snapshot || !snapshot.cleanRows || !snapshot.cleanRows.length){
+      showToast('تعذر استرجاع بيانات هذه العملية — قد تكون حُذفت');
+      return;
+    }
+
     const s = snapshot;
-    STATE.fileName=s.fileName; STATE.fileSheets=s.fileSheets;
-    STATE.cleanRows=s.cleanRows; STATE.columns=s.columns; STATE.headers=s.headers; STATE.formatHints=s.formatHints||{};
-    STATE.detectedType=s.detectedType; STATE.overriddenType=s.overriddenType;
-    STATE.selectedAxisName=s.selectedAxisName;
-    STATE.selectedGoals=(s.selectedGoals&&s.selectedGoals.length)?s.selectedGoals:['comprehensive'];
-    STATE.shortlistJobTitle=s.shortlistJobTitle; STATE.shortlistHeadcount=s.shortlistHeadcount||1;
+    STATE.fileName = s.fileName; STATE.fileSheets = s.fileSheets;
+    STATE.cleanRows = s.cleanRows; STATE.columns = s.columns;
+    STATE.headers = s.headers; STATE.formatHints = s.formatHints || {};
+    STATE.detectedType = s.detectedType; STATE.overriddenType = s.overriddenType;
+    STATE.selectedAxisName = s.selectedAxisName;
+    STATE.selectedGoals = (s.selectedGoals && s.selectedGoals.length) ? s.selectedGoals : ['comprehensive'];
+    STATE.shortlistJobTitle = s.shortlistJobTitle; STATE.shortlistHeadcount = s.shortlistHeadcount || 1;
     STATE.currentOperationId = isRemote ? null : opId;
-    STATE.currentSupabaseAnalysisId = isRemote ? opId : null;
+    STATE.currentSupabaseOperationId = isRemote ? opId : null;
+    STATE.currentSupabaseAnalysisId = null;
+
     this.rebuildAnalysisFromState(STATE.selectedAxisName);
-    showToast('تم استرجاع العملية بالكامل');
+    showToast('تم استرجاع العملية بالكامل ✓');
   },
 
   async clearOperations(){
-    if(SupabaseService.isAvailable() && STATE.currentUser) await SupabaseService.deleteMyAnalyses(STATE.currentUser.id);
-    OperationsStore.clear();
+    const userId = STATE.currentUser ? STATE.currentUser.id : null;
+    if(SupabaseService.isAvailable() && userId){
+      await SupabaseService.deleteMyOperations(userId);
+    }
+    if(userId) OperationsStore.clear(userId);
     this.renderOperationsList();
     showToast('تم مسح سجل العمليات');
   },
