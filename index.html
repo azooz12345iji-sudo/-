@@ -274,6 +274,8 @@ html[data-theme="dark"] .badge--teal{background:rgba(86,163,161,.18); color:var(
 .welcome-greet-bar{display:flex; align-items:center; justify-content:center; gap:10px; padding:13px 20px; border-radius:14px; background:var(--c-teal-100); color:var(--c-teal-800); font-size:13.5px; font-weight:800; margin-bottom:6px;}
 .welcome-greet-bar svg{width:17px; height:17px; flex-shrink:0;}
 html[data-theme="dark"] .welcome-greet-bar{background:rgba(63,140,140,.18); color:var(--c-teal-300);}
+.intel-question-pill{display:inline-flex; align-items:center; gap:5px; padding:5px 12px; border-radius:99px; background:var(--bg-elevated); border:1px solid var(--border-soft); font-size:12px; font-weight:700; color:var(--text-secondary);}
+html[data-theme="dark"] .intel-question-pill{background:var(--bg-sunken);}
 .hero-welcome{display:flex; flex-direction:column; align-items:center; text-align:center; padding:50px 16px 20px; position:relative;}
 .hero-diamond{width:86px; height:86px; margin-bottom:22px; position:relative;}
 .hero-welcome h1{font-size:clamp(26px,4vw,38px); background:var(--grad-brand); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; margin-bottom:10px; line-height:1.25;}
@@ -471,6 +473,28 @@ html[data-theme="dark"] .shortlist-panel__head .ic{background:rgba(63,140,140,.1
 .shortlist-cutoff svg{width:18px; height:18px; flex-shrink:0; color:var(--c-amber); margin-top:1px;}
 .shortlist-cutoff p{font-size:12.5px; line-height:1.8; color:var(--text-primary);}
 .shortlist-empty{font-size:12.5px; color:var(--text-tertiary); padding:14px 0;}
+
+/* ============================== AI Insights ============================== */
+.ai-insights-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:14px; margin-bottom:24px;}
+.ai-card{padding:18px 20px; display:flex; flex-direction:column; gap:8px; border-inline-start:3px solid var(--c-teal-600); background:var(--c-teal-100);}
+html[data-theme="dark"] .ai-card{background:rgba(63,140,140,.12);}
+.ai-card--urgent{border-inline-start-color:var(--c-red); background:var(--c-red-bg);}
+.ai-card--risk{border-inline-start-color:var(--c-amber); background:var(--c-amber-bg);}
+.ai-card--opportunity{border-inline-start-color:var(--c-green); background:var(--c-green-bg);}
+.ai-card h5{font-size:11px; font-weight:900; color:var(--text-tertiary); text-transform:uppercase; letter-spacing:.06em; margin:0;}
+.ai-card p{font-size:13px; font-weight:700; color:var(--text-primary); line-height:1.8; margin:0;}
+.ai-executive-summary{padding:18px 22px; border-radius:15px; background:linear-gradient(135deg,var(--c-teal-100) 0%,var(--bg-elevated) 100%); border:1px solid var(--c-teal-600); margin-bottom:18px;}
+html[data-theme="dark"] .ai-executive-summary{background:linear-gradient(135deg,rgba(63,140,140,.15) 0%,var(--bg-elevated) 100%);}
+.ai-executive-summary .ai-badge{display:inline-flex; align-items:center; gap:6px; font-size:11px; font-weight:900; color:var(--c-teal-700); background:var(--c-teal-100); padding:3px 10px; border-radius:99px; margin-bottom:10px;}
+html[data-theme="dark"] .ai-executive-summary .ai-badge{color:var(--c-teal-300);}
+.ai-executive-summary p{font-size:14px; font-weight:700; line-height:1.9; color:var(--text-primary); margin:0;}
+.ai-strategic-note{padding:14px 18px; border-radius:12px; background:var(--bg-sunken); border:1px dashed var(--c-teal-600); margin-bottom:14px; font-size:13px; line-height:1.8; color:var(--text-primary); font-weight:700;}
+
+/* PDF report AI section */
+.pr-ai-section{border-radius:10px; padding:16px 18px; border:1.5px solid #3F8C8C; background:#EEF6F6; margin-bottom:14px;}
+.pr-ai-section h4{font-size:12px; font-weight:800; color:#1F4D4D; margin:0 0 8px;}
+.pr-ai-section ul{margin:0; padding-inline-start:18px;}
+.pr-ai-section li{font-size:12px; line-height:2; color:#241C30;}
 
 /* ============================== آخر العمليات ============================== */
 .op-card{display:flex; align-items:center; gap:16px; padding:18px 20px; border-radius:15px; background:var(--bg-elevated); border:1px solid var(--border-soft); margin-bottom:12px; cursor:pointer; transition:all .18s var(--ease); text-align:right;}
@@ -767,14 +791,67 @@ html[data-theme="dark"] .goal-pill-active:hover{background:var(--c-teal-600); co
 }
 
 @media print{
-  @page{ margin:14mm; }
-  body *{visibility:hidden;}
-  #print-cover, #print-cover *, #print-report, #print-report *{visibility:visible;}
-  #print-cover{position:static !important; top:auto !important; left:auto !important; width:auto !important; height:100vh !important; break-after:page; page-break-after:always;}
-  #print-report{position:static !important; top:auto !important; left:auto !important; width:auto !important;}
-  #print-report .pr-page{padding:0;}
-  .pr-section{break-inside:avoid;}
-  #prChartsSection, #prSwotGrid{break-before:page; page-break-before:always;}
+  /* ====== أساس: إخفاء كل شيء عدا التقرير ====== */
+  @page{ margin:14mm; size:A4 portrait; }
+  * { -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; color-adjust:exact !important; }
+
+  body *{ visibility:hidden; }
+  #print-cover, #print-cover *,
+  #print-report, #print-report *{ visibility:visible !important; }
+
+  /* ====== إلغاء الوضع الليلي تماماً في الطباعة ====== */
+  html, body, #print-report, #print-report *{
+    background-color:#FFFFFF !important;
+    color:#241C30 !important;
+    --bg-base:#FFFFFF !important; --bg-elevated:#FFFFFF !important; --bg-sunken:#F7F5FB !important;
+    --text-primary:#241C30 !important; --text-secondary:#4A3B63 !important; --text-tertiary:#6B6279 !important;
+    --border-default:#ECEAF1 !important; --border-soft:#F4F2F8 !important;
+    --c-teal-600:#3F8C8C !important; --c-teal-100:#EEF6F6 !important;
+    --c-red:#E15A6B !important; --c-red-bg:#FDF3F4 !important;
+    --c-amber:#E0813F !important; --c-amber-bg:#FDF5EE !important;
+    --c-green:#34A876 !important; --c-green-bg:#F2FAF6 !important;
+  }
+
+  /* ====== إخفاء عناصر واجهة المستخدم ====== */
+  .app-shell, .auth-screen, .ticker-bar,
+  .sidebar, .main-topbar, .chat-fab, .toast-container{ display:none !important; }
+
+  /* ====== صفحة الغلاف (تطبع أولاً، خلفية داكنة خاصة) ====== */
+  #print-cover{
+    position:static !important; top:auto !important; left:auto !important;
+    width:100% !important; height:100vh !important; min-height:297mm !important;
+    page-break-after:always; break-after:page;
+    background:linear-gradient(165deg,#2E2440 0%,#241C30 55%,#1A1426 100%) !important;
+    color:#FFFFFF !important; display:flex !important;
+    flex-direction:column; align-items:center; justify-content:center;
+    text-align:center; padding:60px; box-sizing:border-box;
+    visibility:visible !important;
+  }
+  #print-cover *{ visibility:visible !important; }
+  #print-cover, #print-cover *{ background-color:transparent !important; }
+  #print-cover{ background:linear-gradient(165deg,#2E2440 0%,#241C30 55%,#1A1426 100%) !important; }
+  #print-cover .pc-eyebrow{ color:#7CBDB9 !important; }
+  #print-cover h1{ color:#FFFFFF !important; }
+  #print-cover .pc-sub{ color:#C9C3D8 !important; }
+  #print-cover .pc-meta b{ color:#7CBDB9 !important; }
+  #print-cover .pc-meta span{ color:#9A93A8 !important; }
+
+  /* ====== صفحات التقرير (خلفية بيضاء دائماً) ====== */
+  #print-report{
+    position:static !important; top:auto !important; left:auto !important;
+    width:100% !important; background:#FFFFFF !important;
+    visibility:visible !important;
+  }
+  #print-report .pr-page{ padding:0 !important; }
+  #print-report .pr-section{ break-inside:avoid; page-break-inside:avoid; margin-bottom:24px; }
+  #print-report .pr-section h2{ color:#2E2440 !important; }
+  #print-report table.pr-table th{ background:#EEF6F6 !important; color:#1F4D4D !important; }
+  #print-report .pr-swot-box.s{ background:#F2FAF6 !important; }
+  #print-report .pr-swot-box.w{ background:#FDF3F4 !important; }
+  #print-report .pr-swot-box.o{ background:#EEF6F6 !important; }
+  #print-report .pr-swot-box.t{ background:#FDF5EE !important; }
+  #prChartsSection, #prSwotGrid{ break-before:auto; page-break-before:auto; }
+  .pr-ai-section{ break-inside:avoid; background:#EEF6F6 !important; border-color:#3F8C8C !important; }
 }
 </style>
 </head>
@@ -1078,6 +1155,7 @@ html[data-theme="dark"] .goal-pill-active:hover{background:var(--c-teal-600); co
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
           </button>
           <span class="text-tertiary" style="font-size:12px" id="lastAnalyzedAt"></span>
+          <span class="ai-badge" id="intelligenceBadge" style="display:none; font-size:11px; padding:2px 10px; border-radius:99px; background:var(--c-teal-100); color:var(--c-teal-700); font-weight:800;"></span>
         </div>
 
         <!-- لوحة الترشيح الوظيفي — تظهر فقط لقالب فرز المرشحين -->
@@ -1102,6 +1180,12 @@ html[data-theme="dark"] .goal-pill-active:hover{background:var(--c-teal-600); co
         </div>
 
         <div id="dashboardAxisChips"></div>
+
+        <!-- لوحة الذكاء: تظهر بعد التحليل وتُخبر المدير ما الذي يجيب عنه هذا التقرير -->
+        <div id="intelligencePanel" style="display:none; margin-bottom:18px">
+          <div id="intelligenceRiskBar" style="display:none; padding:10px 16px; border-radius:12px; background:var(--c-amber-bg); border:1px solid var(--c-amber); margin-bottom:10px; font-size:12.5px; font-weight:700; color:var(--text-primary);"></div>
+          <div id="intelligenceQuestions" style="display:flex; flex-wrap:wrap; gap:8px;"></div>
+        </div>
 
         <div class="kpi-grid" id="kpiGrid"></div>
 
@@ -1130,6 +1214,21 @@ html[data-theme="dark"] .goal-pill-active:hover{background:var(--c-teal-600); co
 
         <div class="section-head"><div><span class="eyebrow">طبقة الذكاء التحليلي العامة</span><h3>اكتشافات ذكية</h3><p>تُستخرج تلقائياً من محتوى ملفك الفعلي — تختلف من ملف لآخر حتى ضمن نفس القالب</p></div></div>
         <div class="discoveries-grid" id="discoveriesGrid"></div>
+
+        <!-- قسم الرؤى التنفيذية المعززة بالذكاء الاصطناعي — يظهر فقط عند توفر مفتاح Claude API -->
+        <div id="aiInsightsSection" style="display:none">
+          <div class="section-head">
+            <div>
+              <span class="eyebrow">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px;vertical-align:middle;margin-inline-end:4px"><path d="M12 2l2 7h7l-6 4.5 2.3 7L12 17l-5.3 3.5L9 13 3 8.5h7z"/></svg>
+                رؤى Claude AI
+              </span>
+              <h3>الرؤى التنفيذية المعززة بالذكاء الاصطناعي</h3>
+              <p id="aiStatusText">جاري التحليل...</p>
+            </div>
+          </div>
+          <div class="ai-insights-grid" id="aiInsightsGrid"></div>
+        </div>
 
         <div class="section-head"><div><span class="eyebrow">نظرة سريعة</span><h3>توزيع الأداء حسب المحور المختار</h3></div></div>
         <div class="glass-card" style="padding:20px;">
@@ -1283,6 +1382,18 @@ html[data-theme="dark"] .goal-pill-active:hover{background:var(--c-teal-600); co
         <div class="glass-card" style="padding:20px">
           <div class="chart-card__canvas-wrap" style="height:220px"><canvas id="chartAdminGrowth"></canvas></div>
         </div>
+
+        <div class="section-head"><div><span class="eyebrow">إعدادات الذكاء الاصطناعي</span><h3>طبقة Claude AI الاختيارية</h3><p>أدخل مفتاح Claude API لتعزيز التحليل برؤى تنفيذية أعمق — المنصة تعمل بالكامل بدونه</p></div></div>
+        <div class="glass-card" style="padding:22px">
+          <div class="shortlist-panel__controls" style="border:0;padding:0;margin:0">
+            <label style="flex:1">مفتاح Claude API (sk-ant-...)
+              <input type="password" id="aiKeyInput" placeholder="sk-ant-api03-..." autocomplete="off">
+            </label>
+            <button class="btn btn--primary btn--sm" id="saveAiKeyBtn">حفظ</button>
+            <button class="btn btn--ghost btn--sm" id="clearAiKeyBtn">حذف</button>
+          </div>
+          <p id="aiKeyStatus" style="font-size:12px;margin-top:10px;font-weight:700;color:var(--text-tertiary)"></p>
+        </div>
       </section>
 
     </div><!-- /viewsContainer -->
@@ -1394,6 +1505,12 @@ html[data-theme="dark"] .goal-pill-active:hover{background:var(--c-teal-600); co
       <p class="pr-overview" id="prShortlistSummary"></p>
       <ol class="pr-insights" id="prShortlistPicks"></ol>
       <p class="pr-overview" id="prShortlistCutoff" style="font-style:italic;"></p>
+    </section>
+
+    <section class="pr-section" id="prAiSection" style="display:none">
+      <h2><span class="pr-num">04.5</span> الرؤى التنفيذية المعززة بالذكاء الاصطناعي ✨</h2>
+      <div id="prAiSummary" class="pr-overview" style="margin-bottom:14px;font-weight:700;"></div>
+      <div id="prAiInsights"></div>
     </section>
 
     <section class="pr-section">
@@ -2153,6 +2270,136 @@ const DOMAIN_PHRASING = {
   }
 };
 
+/* ============================================================
+   3.5) DATA INTELLIGENCE — التفكير قبل التحليل
+   يُشغَّل أولاً قبل أي رسم أو مؤشر أو استنتاج.
+   يفهم البيانات من كل أبعادها: القيم الفعلية + التوزيع + الأنماط
+   + السياق، ويُنتج "بطاقة ذكاء" تُغني جميع المحركات الأخرى.
+   لا يُلغي أي محرك حالي — يُضيف سياقاً يُحسّن جودة مخرجاته.
+   ============================================================ */
+const DataIntelligence = {
+
+  analyze(rows, columns, picks, detectedType){
+    if(!rows.length) return this._empty();
+    const profile   = this._buildProfile(rows, columns, picks);
+    const domain    = this._inferDomain(profile, columns, detectedType);
+    const strategy  = this._selectStrategy(profile, picks);
+    const context   = this._buildContextSummary(rows, columns, picks, domain, profile);
+    const questions = this._managerQuestions(domain, profile, picks);
+    const risks     = this._earlyRisks(rows, columns, picks, profile);
+    return { domain, profile, strategy, context, questions, risks };
+  },
+
+  _empty(){ return { domain:'general', profile:{}, strategy:'distribution', context:'', questions:[], risks:[] }; },
+
+  _buildProfile(rows, columns, picks){
+    const metrics   = columns.filter(c=>c.type==='metric');
+    const cats      = columns.filter(c=>c.type==='category');
+    const hasPct    = metrics.some(m=>m.unit==='percent' || normalizeAr(m.name).includes('نسبه'));
+    const hasCurr   = metrics.some(m=>m.unit==='currency');
+    const hasDates  = columns.some(c=>c.type==='time');
+    const hasStatus = columns.some(c=>c.type==='status');
+
+    let spread = 'uniform', concentrationTop = 0;
+    if(picks.primaryMetric){
+      const vals = rows.map(r=>r[picks.primaryMetric.name]).filter(v=>typeof v==='number' && !isNaN(v));
+      if(vals.length >= 5){
+        const mean = vals.reduce((a,b)=>a+b,0)/vals.length;
+        const cv = mean!==0 ? stddev(vals)/Math.abs(mean) : 0;
+        spread = cv > 0.5 ? 'polarized' : cv > 0.25 ? 'skewed' : 'uniform';
+
+        // نسبة مساهمة أفضل 20% من القيم (قاعدة باريتو)
+        const sorted = [...vals].sort((a,b)=>b-a);
+        const top20 = sorted.slice(0, Math.max(1, Math.floor(sorted.length*0.2)));
+        const total = vals.reduce((a,b)=>a+b,0);
+        concentrationTop = total>0 ? top20.reduce((a,b)=>a+b,0)/total*100 : 0;
+      }
+    }
+
+    // كثافة البيانات المفقودة عبر الأعمدة الرقمية
+    const missingRate = metrics.length ? metrics.reduce((sum,m)=>{
+      const filled = rows.filter(r=>typeof r[m.name]==='number' && !isNaN(r[m.name])).length;
+      return sum + (1 - filled/rows.length);
+    }, 0) / metrics.length : 0;
+
+    return {
+      hasPct, hasCurr, hasDates, hasStatus,
+      rowCount: rows.length,
+      metricCount: metrics.length,
+      categoryCount: cats.length,
+      spread, concentrationTop, missingRate,
+      isLargeDataset: rows.length > 100,
+      isSmallDataset: rows.length < 10,
+    };
+  },
+
+  _inferDomain(profile, columns, detectedType){
+    // الأولوية: النوع المكتشف (من الأعمدة) → القيم → الافتراضي
+    const typeMap = {
+      volunteers:'volunteers', candidates:'hr', employees:'hr',
+      halaqat:'education', donations:'finance', projects:'projects',
+      education:'education',
+    };
+    if(typeMap[detectedType]) return typeMap[detectedType];
+    if(profile.hasCurr) return 'finance';
+    if(profile.hasPct && profile.hasDates) return 'performance';
+    if(profile.hasStatus && profile.rowCount > 20) return 'operations';
+    return 'general';
+  },
+
+  _selectStrategy(profile, picks){
+    if(picks.primaryTime && profile.hasDates) return 'trend';
+    if(profile.spread === 'polarized') return 'risk';
+    if(profile.categoryCount > 0) return 'comparison';
+    if(profile.concentrationTop > 70) return 'pareto';
+    return 'distribution';
+  },
+
+  _buildContextSummary(rows, columns, picks, domain, profile){
+    const domainLabels = {
+      hr:'موارد بشرية', education:'تعليمي', finance:'مالي',
+      volunteers:'متطوعين', projects:'مشاريع', performance:'أداء', operations:'تشغيلي', general:'عام'
+    };
+    const lbl = domainLabels[domain] || 'عام';
+    const metric  = picks.primaryMetric  ? ` | المؤشر الرئيسي: «${picks.primaryMetric.name}»` : '';
+    const axis    = picks.primaryCategory ? ` | المحور: «${picks.primaryCategory.name}»` : '';
+    const size    = profile.isSmallDataset ? ' (حجم صغير — نتائج توجيهية)'
+                  : profile.isLargeDataset ? ' (حجم كافٍ للتحليل الإحصائي الموثوق)' : '';
+    return `ملف ${lbl}: ${fmtNum(rows.length)} سجل × ${columns.length} عمود${size}${metric}${axis}`;
+  },
+
+  _managerQuestions(domain, profile, picks){
+    const qs = [];
+    if(picks.primaryMetric){
+      qs.push(`من يحقق أفضل أداء في «${picks.primaryMetric.name}»؟`);
+      qs.push('من يحتاج دعماً أو تدخلاً عاجلاً؟');
+    }
+    if(profile.spread === 'polarized') qs.push('ما سبب التفاوت الكبير في الأداء؟');
+    if(profile.hasDates) qs.push('هل الأداء يتحسن أم يتراجع؟');
+    const extras = {
+      hr: 'هل توجد مشكلة هيكلية تؤثر على أداء الفريق؟',
+      education: 'ما مستوى الاستيعاب ومعدلات الحضور؟',
+      finance: 'هل الأرقام المالية تسير وفق الخطة؟',
+      volunteers: 'كيف مستوى انتظام ومشاركة المتطوعين؟',
+      projects: 'هل المشاريع تسير في الوقت والميزانية المحددة؟',
+    };
+    if(extras[domain]) qs.push(extras[domain]);
+    return qs;
+  },
+
+  _earlyRisks(rows, columns, picks, profile){
+    // مخاطر يمكن اكتشافها قبل التحليل الكامل (من البيانات الخام مباشرة)
+    const risks = [];
+    if(profile.missingRate > 0.3)
+      risks.push({ level:'high', text:`نسبة عالية من البيانات المفقودة (${fmtNum(profile.missingRate*100,0)}% من الأعمدة الرقمية) — قد يُقلل من دقة التحليل` });
+    if(profile.isSmallDataset)
+      risks.push({ level:'medium', text:`عدد السجلات (${rows.length}) صغير نسبياً — الاستنتاجات توجيهية لا قاطعة` });
+    if(profile.spread === 'polarized')
+      risks.push({ level:'medium', text:'تفاوت حاد في البيانات — يستوجب مراجعة الحالات الشاذة قبل اتخاذ قرارات عامة' });
+    return risks;
+  },
+};
+
 const AnalysisEngine = {
   buildAggregates(rows, metricCol, categoryCol){
     const groups = {};
@@ -2266,6 +2513,90 @@ const AnalysisEngine = {
     return kpis;
   },
 
+  // يُنتج مؤشرات مخصصة للمجال بدلاً من نفس المؤشرات لكل الملفات:
+  // يأخذ المؤشرات الأساسية ثم يُعيد تسميتها + يُضيف مؤشرات إضافية ذكية بحسب السياق
+  computeSmartKPIs(rows, columns, picks, intelligence){
+    const base = this.computeKPIs(rows, columns, picks);
+    if(!intelligence || !picks.primaryMetric) return base;
+    const domain = intelligence.domain;
+    const metricName = picks.primaryMetric.name;
+    const unit = picks.primaryMetric.unit;
+    const allVals = rows.map(r=>r[picks.primaryMetric.name]).filter(v=>typeof v==='number' && !isNaN(v));
+    const mean = allVals.length ? allVals.reduce((a,b)=>a+b,0)/allVals.length : 0;
+
+    // 1) إعادة تسمية المؤشرات الأساسية بأسماء أكثر دلالة حسب المجال
+    const labeled = base.map(k=>{
+      const n = normalizeAr(k.label);
+      if(n.startsWith('متوسط')){
+        const domainAvgLabels = {
+          finance: `متوسط ${metricName} للفترة`,
+          education: n.includes('حضور') ? 'معدل الحضور العام' : `متوسط ${metricName}`,
+          hr: `متوسط ${metricName} للفريق`,
+          volunteers: n.includes('ساعات') ? 'متوسط ساعات التطوع' : `متوسط ${metricName}`,
+          projects: `متوسط ${metricName} عبر المشاريع`,
+        };
+        return {...k, label: domainAvgLabels[domain] || k.label};
+      }
+      if(n === 'نسبه الانجاز'){
+        const domainCompletionLabels = {
+          education: 'نسبة الطلاب إيجابيو الحضور',
+          hr: 'نسبة الموظفين بأداء جيد فأعلى',
+          volunteers: 'نسبة المتطوعين النشطين',
+          finance: 'نسبة الفترات فوق المتوسط',
+          projects: 'نسبة المشاريع المكتملة',
+        };
+        return {...k, label: domainCompletionLabels[domain] || 'نسبة الإنجاز', sub: k.sub};
+      }
+      return k;
+    });
+
+    // 2) إضافة مؤشرات حصرية لكل مجال (غير موجودة في الأساس)
+    const extras = [];
+
+    if(domain === 'finance' || intelligence.profile.hasCurr){
+      const total = allVals.reduce((a,b)=>a+b,0);
+      if(total > 0) extras.push({label:'إجمالي '+metricName, value:total, unit, icon:'metric', delta:null, sub:'مجموع كل الفترات/السجلات'});
+      const above = allVals.filter(v=>v>mean).length;
+      if(allVals.length) extras.push({label:'فترات فوق المتوسط', value:Math.round(above/allVals.length*100), unit:'percent', icon:'status', delta:null, sub:`${above} من ${allVals.length} سجل`});
+    }
+
+    if(domain === 'education'){
+      // نسبة القبول إن وجد عمود حالة (نجاح/رسوب/نشط...)
+      if(picks.primaryStatus){
+        const PASS_VALS = ['نشط','ناجح','مقبول','حاضر','جيد','ممتاز','مكتمل'].map(normalizeAr);
+        const statusVals = rows.map(r=>r[picks.primaryStatus.name]).filter(v=>v!=null&&v!=='');
+        const passCount = statusVals.filter(v=>PASS_VALS.includes(normalizeAr(String(v)))).length;
+        if(statusVals.length) extras.push({label:'نسبة الإيجابيين في '+picks.primaryStatus.name, value:Math.round(passCount/statusVals.length*100), unit:'percent', icon:'check', delta:null, sub:`${passCount} من ${statusVals.length} طالب`});
+      }
+      // نسبة الطلاب الممتازين (أعلى ثلث)
+      const excThreshold = mean + (allVals.length >= 3 ? allVals.reduce((a,b)=>a+b,0)/allVals.length*0.2 : 0);
+      const excCount = allVals.filter(v=>v>=excThreshold).length;
+      if(allVals.length) extras.push({label:'نسبة المتميزين (أعلى 20%+)', value:Math.round(excCount/allVals.length*100), unit:'percent', icon:'metric', delta:null, sub:`${excCount} طالب من ${allVals.length}`});
+    }
+
+    if(domain === 'volunteers'){
+      if(picks.primaryStatus){
+        const ACTIVE = ['نشط','active'].map(normalizeAr);
+        const statusVals = rows.map(r=>r[picks.primaryStatus.name]).filter(v=>v!=null&&v!=='');
+        const activeCount = statusVals.filter(v=>ACTIVE.some(a=>normalizeAr(String(v)).includes(a))).length;
+        if(statusVals.length) extras.push({label:'نسبة المتطوعين النشطين', value:Math.round(activeCount/statusVals.length*100), unit:'percent', icon:'check', delta:null, sub:`${activeCount} من ${statusVals.length} متطوع`});
+      }
+    }
+
+    if(domain === 'hr' || domain === 'general'){
+      // معدل الأداء المتميز (أعلى ربع)
+      if(allVals.length >= 4){
+        const sorted = [...allVals].sort((a,b)=>b-a);
+        const q1Threshold = sorted[Math.floor(sorted.length*0.25)];
+        const topCount = allVals.filter(v=>v>=q1Threshold).length;
+        extras.push({label:'نسبة أصحاب الأداء المتميز', value:Math.round(topCount/allVals.length*100), unit:'percent', icon:'metric', delta:null, sub:`أعلى ربع: ${topCount} من ${allVals.length}`});
+      }
+    }
+
+    // دمج: الأساسية أولاً ثم الإضافية (بحد أقصى 12 مؤشر)
+    return [...labeled, ...extras].slice(0, 12);
+  },
+
   // مؤشرات تعتمد على المحور المختار (تُحدّث عند تبديل المحور)
   computeAxisKPIs(aggregates, picks, forecast){
     const kpis = [];
@@ -2375,58 +2706,108 @@ const AnalysisEngine = {
     return {urgent, intervene, monitor, excellent, mean, std};
   },
 
-  buildInsights(rows, columns, picks, aggregates, decision){
+  buildInsights(rows, columns, picks, aggregates, decision, intelligence){
     const insights = [];
+    const intel = intelligence || { domain:'general', profile:{}, strategy:'comparison', context:'', questions:[], risks:[] };
+
     if(!picks.primaryMetric){
-      insights.push({title:'نظرة عامة', text:`تحتوي بياناتك على ${fmtNum(rows.length)} سجلاً ضمن ${columns.length} عمودًا، دون مؤشر رقمي رئيسي واضح للتحليل العميق.`, kind:'info'});
+      const numCols = columns.filter(c=>c.type==='metric').length;
+      const catCols = columns.filter(c=>c.type==='category' || c.type==='identifier').length;
+      let msg = `تحتوي بياناتك على ${fmtNum(rows.length)} سجلاً موزعة عبر ${columns.length} عموداً (${numCols} مؤشر رقمي و${catCols} حقل وصفي).`;
+      if(intel.profile.isSmallDataset) msg += ' البيانات محدودة الحجم — الاستنتاجات استرشادية.';
+      else if(intel.profile.missingRate > 0.3) msg += ` تنبيه: ${fmtNum(intel.profile.missingRate*100,0)}% من القيم الرقمية غير مكتملة — قد يؤثر على دقة التحليل.`;
+      insights.push({title:'نظرة عامة على البيانات', text:msg, kind:'info'});
       return insights;
     }
+
     const metricLabel = picks.primaryMetric.name;
     const unit = picks.primaryMetric.unit;
     const inverse = !!picks.primaryMetric.inverse;
     const axisLabel = picks.primaryCategory ? picks.primaryCategory.name : null;
+    const allVals = rows.map(r=>r[metricLabel]).filter(v=>typeof v==='number' && !isNaN(v));
+    const globalMean = allVals.length ? allVals.reduce((a,b)=>a+b,0)/allVals.length : 0;
+    const totalSum = allVals.reduce((a,b)=>a+b,0);
 
     if(aggregates.length){
-      // الأفضل/الأسوأ مع مراعاة اتجاه المؤشر (الأقل أفضل لمؤشرات التكلفة)
       const sorted = [...aggregates].sort((a,b)=> inverse ? a.avg-b.avg : b.avg-a.avg);
-      const best = sorted[0];
+      const best  = sorted[0];
       const worst = sorted[sorted.length-1];
-      insights.push({
-        title: axisLabel ? `${metricDirectionPhrase(metricLabel, inverse, true)} حسب ${axisLabel}` : metricDirectionPhrase(metricLabel, inverse, true), kind:'green',
-        text:`<b>${escapeHtml(best.category)}</b> يحقق أفضل أداء في ${metricLabel} بقيمة ${fmtValue(best.avg, unit)} (${fmtNum(best.count)} سجل).`
-      });
-      if(worst.category !== best.category){
-        insights.push({
-          title: axisLabel ? `${metricDirectionPhrase(metricLabel, inverse, false)} حسب ${axisLabel}` : metricDirectionPhrase(metricLabel, inverse, false), kind:'red',
-          text:`<b>${escapeHtml(worst.category)}</b> يسجل أضعف أداء في ${metricLabel} بقيمة ${fmtValue(worst.avg, unit)}، وقد يحتاج دعماً عاجلاً.`
-        });
+      const totalCats = aggregates.length;
+
+      // ===== الأفضل: مع تفسير السبب واقتراح الإجراء =====
+      if(best){
+        const bestPct = globalMean > 0 ? (best.avg - globalMean)/globalMean*100 : 0;
+        const bestShare = totalSum > 0 && unit !== 'percent' ? best.sum/totalSum*100 : 0;
+        let txt = `«${best.category}» يتصدر المشهد في «${metricLabel}» بمتوسط ${fmtValue(best.avg, unit)}`;
+        if(Math.abs(bestPct) > 5) txt += `، متجاوزاً المتوسط العام (${fmtValue(globalMean, unit)}) بنسبة ${fmtNum(Math.abs(bestPct),0)}%`;
+        if(bestShare > 20) txt += `، ويُمثّل ${fmtNum(bestShare,0)}% من الإجمالي`;
+        txt += totalCats > 2
+          ? `. ممارساته تستحق الدراسة والتعميم على بقية عناصر ${axisLabel || 'المجموعة'}.`
+          : '.';
+        insights.push({ title:`${metricDirectionPhrase(metricLabel, inverse, true)} حسب ${axisLabel||'المجموعة'}`, kind:'green', text:txt });
+      }
+
+      // ===== الأسوأ: مع تشخيص الفجوة ونوع التدخل =====
+      if(worst && worst.category !== best?.category){
+        const gap = Math.abs(best.avg - worst.avg);
+        const gapPct = best.avg > 0 ? gap/best.avg*100 : 0;
+        const isUrgent = !!decision?.urgent?.find(u=>u.category===worst.category);
+        let txt = `«${worst.category}» يُسجّل أضعف مستوى في «${metricLabel}» بمتوسط ${fmtValue(worst.avg, unit)}`;
+        if(gapPct > 10) txt += `، والفجوة بينه وبين الأفضل تبلغ ${fmtNum(gapPct,0)}%`;
+        txt += isUrgent
+          ? `. وضعه الحالي يُصنَّف حالة عاجلة تتطلب تدخلاً فورياً — التأخر يُضاعف التكلفة.`
+          : `. يستحق خطة تحسين مدروسة خلال الفترة القادمة.`;
+        insights.push({ title:`${metricDirectionPhrase(metricLabel, inverse, false)} حسب ${axisLabel||'المجموعة'}`, kind:'red', text:txt });
+      }
+
+      // ===== مؤشر التفاوت: قصة الفوارق =====
+      if(totalCats >= 4 && decision){
+        const urgentCount   = decision.urgent.length;
+        const excellentCount= decision.excellent.length;
+        if(urgentCount > 0 || excellentCount > 0){
+          const pctExtreme = Math.round((urgentCount+excellentCount)/totalCats*100);
+          let txt = `${excellentCount} من ${totalCats} عنصر في ${axisLabel||'المجموعة'} بمستوى ممتاز، و${urgentCount} في وضع عاجل`;
+          if(pctExtreme > 40) txt += ` — ${pctExtreme}% من العناصر في أطراف الطيف مما يشير إلى تباين منهجي لا مجرد حالات استثنائية`;
+          txt += '. التعامل مع الأسباب الجذرية للتفاوت أجدى من معالجة كل حالة بشكل منفصل.';
+          insights.push({ title:'تفاوت ملحوظ في الأداء', kind:'amber', text:txt });
+        }
       }
     }
 
+    // ===== الاتجاه الزمني: ماذا يعني للمستقبل؟ =====
     if(picks.primaryTime){
       const growth = AnalysisEngine.computeGrowth(rows, metricLabel, picks.primaryTime.name);
       if(growth !== null){
         const good = inverse ? growth<0 : growth>=0;
-        insights.push({
-          title: good ? 'اتجاه تصاعدي' : 'اتجاه تنازلي', kind: good ? 'green':'red',
-          text:`${metricLabel} يظهر تغيراً تقديرياً قدره ${pct(growth)} بين النصف الأول والثاني من الفترة الزمنية المرصودة.`
-        });
+        const absG = Math.abs(growth);
+        let txt;
+        if(absG < 2){
+          txt = `«${metricLabel}» يسير باستقرار (تغير ${pct(growth)} بين النصفين) — لا يوجد اتجاه صاعد أو هابط واضح. استقرار الأداء إيجابي إذا كان المستوى جيداً، ومقلق إذا كان يحتاج تحسيناً.`;
+        } else if(good){
+          txt = `«${metricLabel}» يُظهر تحسناً ملحوظاً بنسبة ${pct(absG)} بين النصفين — اتجاه إيجابي، الأولوية الحفاظ على الزخم ورصد العوامل المحركة.`;
+        } else {
+          txt = `«${metricLabel}» يتراجع بنسبة ${pct(absG)} بين النصفين — تراجع مستمر يستوجب مراجعة العوامل المؤثرة وخطة تصحيح قبل اتساع الفجوة.`;
+        }
+        insights.push({ title: good ? 'اتجاه تصاعدي' : 'اتجاه تنازلي', kind: absG<2 ? 'info' : good ? 'green' : 'red', text:txt });
       }
     }
 
-    if(decision && decision.urgent.length){
-      const top = decision.urgent[0];
+    // ===== التوصية الأعلى أولوية =====
+    const topAction = decision?.urgent[0] || decision?.intervene[0];
+    if(topAction){
+      const isUrgent = !!decision?.urgent[0];
       insights.push({
-        title:'أهم توصية', kind:'amber',
-        text: top.action
-      });
-    } else if(decision && decision.intervene.length){
-      const top = decision.intervene[0];
-      insights.push({
-        title:'أهم توصية', kind:'amber',
-        text: top.action
+        title: isUrgent ? 'أهم توصية (عاجلة)' : 'أهم توصية',
+        kind:'amber',
+        text: topAction.action + (isUrgent ? ' — أولوية تنفيذية عالية.' : ''),
       });
     }
+
+    // ===== تحذير جودة البيانات (من DataIntelligence) =====
+    if(intel.risks.length > 0 && intel.risks[0].level==='high'){
+      insights.push({ title:'تحذير: جودة البيانات', kind:'info', text:intel.risks[0].text });
+    }
+
     return insights;
   }
 };
@@ -2529,87 +2910,126 @@ const SWOTEngine = {
     return 'low';
   },
 
-  generate(rows, picks, aggregates, decision, forecast){
+  generate(rows, picks, aggregates, decision, forecast, intelligence){
     const swot = {strengths:[], weaknesses:[], opportunities:[], threats:[]};
     if(!picks.primaryMetric || !aggregates.length || !decision) return swot;
+    const intel = intelligence || { domain:'general', profile:{} };
 
     const metricLabel = picks.primaryMetric.name;
     const unit = picks.primaryMetric.unit;
     const inverse = !!picks.primaryMetric.inverse;
     const axisLabel = picks.primaryCategory ? picks.primaryCategory.name : 'العناصر';
+    const globalMean = aggregates.length ? aggregates.reduce((s,a)=>s+a.avg,0)/aggregates.length : 0;
 
     // ===== نقاط القوة =====
     decision.excellent.slice(0,3).forEach(item=>{
-      swot.strengths.push({
-        text:`«${item.category}» يحقق أداءً متفوقاً في ${metricLabel} بقيمة ${fmtValue(item.avg, unit)} (انحراف +${fmtNum(item.zScore,1)}σ عن المتوسط) — يستحق توثيق ممارساته وتعميمها.`,
-        importance: this.importanceOf(item),
-      });
+      const above = globalMean>0 ? (item.avg-globalMean)/globalMean*100 : 0;
+      const impactNote = item.impactScore >= 20 ? `ويغطي ${fmtNum(item.impactScore,0)}% من السجلات مما يجعل تأثيره واسعاً` : null;
+      let txt = `«${item.category}» يتفوق في ${metricLabel} بمتوسط ${fmtValue(item.avg, unit)} (+${fmtNum(Math.abs(item.zScore),1)}σ عن المتوسط`;
+      if(Math.abs(above)>5) txt += `، أي أعلى بـ${fmtNum(Math.abs(above),0)}%`;
+      txt += ')';
+      if(impactNote) txt += `، ${impactNote}`;
+      txt += `. تعميم أسلوبه على بقية ${axisLabel} فرصة تحسين واضحة.`;
+      swot.strengths.push({ text:txt, importance: this.importanceOf(item) });
     });
+
     if(aggregates.length && decision.excellent.length/aggregates.length > 0.4){
-      swot.strengths.push({ text:`أكثر من ${Math.round(decision.excellent.length/aggregates.length*100)}% من عناصر ${axisLabel} تحقق أداءً ممتازاً — مؤشر على قوة منهجية عامة في الأداء.`, importance:'medium' });
+      const pct = Math.round(decision.excellent.length/aggregates.length*100);
+      swot.strengths.push({ text:`${pct}% من عناصر ${axisLabel} تحقق أداءً ممتازاً — مؤشر على قوة منهجية عامة تستحق التوثيق والحفاظ عليها.`, importance:'medium' });
     }
+
     if(forecast){
       const goodTrend = inverse ? forecast.trendDirection==='تنازلي' : forecast.trendDirection==='تصاعدي';
-      if(goodTrend) swot.strengths.push({ text:`المؤشر «${metricLabel}» يُظهر اتجاهاً تصاعدياً مستمراً نحو الأفضل عبر الفترة الزمنية المرصودة.`, importance:'medium' });
+      if(goodTrend) swot.strengths.push({
+        text:`الاتجاه الزمني لـ«${metricLabel}» إيجابي ومستمر — الزخم الحالي يدعم الوصول لمستويات أفضل إذا حُوفظ على العوامل الداعمة.`,
+        importance:'medium'
+      });
     }
-    if(!swot.strengths.length && decision.monitor.length){
-      const top = [...aggregates].sort((a,b)=> inverse? a.avg-b.avg : b.avg-a.avg)[0];
-      if(top) swot.strengths.push({ text:`«${top.category}» يحقق أفضل أداء نسبي حالياً في ${metricLabel} بقيمة ${fmtValue(top.avg, unit)}.`, importance:'low' });
+
+    if(!swot.strengths.length){
+      const top = [...aggregates].sort((a,b)=>inverse?a.avg-b.avg:b.avg-a.avg)[0];
+      if(top) swot.strengths.push({ text:`«${top.category}» يُسجّل أفضل أداء نسبي حالياً في ${metricLabel} بقيمة ${fmtValue(top.avg, unit)} — الحفاظ على هذا المستوى وتعزيزه هو الهدف الأقرب.`, importance:'low' });
     }
 
     // ===== نقاط الضعف =====
     decision.intervene.slice(0,3).forEach(item=>{
-      swot.weaknesses.push({
-        text:`«${item.category}» يسجل أداءً دون المتوسط في ${metricLabel} (${fmtValue(item.avg, unit)})، بانحراف ${fmtNum(item.zScore,1)}σ — يستدعي خطة تحسين.`,
-        importance: this.importanceOf(item),
-      });
+      const below = globalMean>0 ? (globalMean-item.avg)/globalMean*100 : 0;
+      let txt = `«${item.category}» يتخلف في ${metricLabel} بمتوسط ${fmtValue(item.avg, unit)} (${fmtNum(item.zScore,1)}σ دون المتوسط`;
+      if(Math.abs(below)>5) txt += `، أي أدنى بـ${fmtNum(below,0)}%`;
+      txt += `)`;
+      if(item.impactScore >= 15) txt += `، ويمثل ${fmtNum(item.impactScore,0)}% من السجلات مما يجعل ضعفه ذا تأثير ملموس على المستوى الكلي`;
+      txt += `. يستوجب خطة تطوير واضحة الأهداف والجدول الزمني.`;
+      swot.weaknesses.push({ text:txt, importance: this.importanceOf(item) });
     });
-    const filledCount = rows.filter(r=> typeof r[metricLabel]==='number').length;
+
+    const filledCount = rows.filter(r=>typeof r[metricLabel]==='number').length;
     const coverage = rows.length ? filledCount/rows.length : 1;
     if(coverage < 0.85){
-      swot.weaknesses.push({ text:`نسبة اكتمال بيانات «${metricLabel}» تبلغ ${fmtNum(coverage*100,0)}% فقط — القيم المفقودة قد تؤثر على دقة التحليل.`, importance: coverage<0.6?'high':'medium' });
+      swot.weaknesses.push({ text:`اكتمال بيانات «${metricLabel}» عند ${fmtNum(coverage*100,0)}% فقط — القيم المفقودة تُضعف موثوقية الاستنتاجات وقد تُخفي حالات تحتاج انتباهاً.`, importance: coverage<0.6?'high':'medium' });
     }
-    if(!swot.weaknesses.length && decision.urgent.length===0 && decision.intervene.length===0){
-      swot.weaknesses.push({ text:`لا تظهر نقاط ضعف جوهرية حالياً ضمن محور «${axisLabel}» — استمر بالمتابعة الدورية للحفاظ على المستوى.`, importance:'low' });
+
+    if(intel.profile.spread === 'polarized'){
+      swot.weaknesses.push({ text:`تباين حاد في بيانات ${axisLabel} (معامل تباين مرتفع) — عدم الاتساق في الأداء قد يعكس غياب معايير موحدة أو تفاوتاً في الموارد.`, importance:'medium' });
+    }
+
+    if(!swot.weaknesses.length && !decision.urgent.length){
+      swot.weaknesses.push({ text:`لا تظهر نقاط ضعف جوهرية ضمن محور «${axisLabel}» — غياب الضعف الظاهر لا يعني غياب التحسين الممكن، المراجعة الدورية ضرورية.`, importance:'low' });
     }
 
     // ===== الفرص =====
-    [...decision.monitor].filter(i=>i.zScore>0).sort((a,b)=>b.zScore-a.zScore).slice(0,2).forEach(item=>{
-      swot.opportunities.push({ text:`«${item.category}» قريب من مستوى التميز — فرصة لرفعه للمستوى الممتاز بجهد محدود.`, importance:'medium' });
+    [...decision.monitor].filter(i=>i.zScore>0).sort((a,b)=>b.impactScore-a.impactScore).slice(0,2).forEach(item=>{
+      const gap = decision.mean>0 ? Math.abs(item.avg-decision.mean)/decision.mean*100 : 0;
+      swot.opportunities.push({
+        text:`«${item.category}» قريب من العتبة الممتازة — تحسين ${fmtNum(gap,0)}% إضافي يرفعه للمستوى الأعلى. انخفاض الجهد المطلوب يجعله أولوية لتحقيق نتائج سريعة.`,
+        importance:'medium'
+      });
     });
-    [...decision.monitor].filter(i=>i.impactScore>=20).slice(0,2).forEach(item=>{
-      swot.opportunities.push({ text:`«${item.category}» يمثل ${fmtNum(item.impactScore,0)}% من إجمالي السجلات بأداء متوسط — تحسينه يحقق أثراً واسعاً على النتيجة العامة.`, importance:'medium' });
-    });
+
     if(forecast){
       const oppTrend = inverse ? forecast.trendDirection==='تنازلي' : forecast.trendDirection==='تصاعدي';
-      if(oppTrend) swot.opportunities.push({ text:`الاتجاه الزمني العام يدعم استمرار التحسن في «${metricLabel}» خلال الفترة القادمة إذا تمت المحافظة على الزخم الحالي.`, importance:'low' });
+      if(oppTrend) swot.opportunities.push({
+        text:`الاتجاه الزمني يُنبئ بتحسن مستمر في «${metricLabel}» — الفرصة في توظيف هذا الزخم لتسريع الوصول للأهداف بدلاً من الانتظار السلبي.`,
+        importance:'medium'
+      });
     }
-    if(!swot.opportunities.length){
-      swot.opportunities.push({ text:`تعميم ممارسات أفضل العناصر أداءً على بقية ${axisLabel} يمثل فرصة تحسين عامة.`, importance:'low' });
-    }
+
+    const domainOpps = {
+      hr:'تطوير كفاءات المتأخرين أداءً يرفع الإنتاجية الكلية دون تكاليف توظيف إضافية.',
+      education:'تبادل الخبرات بين المتقدمين والمتأخرين يرفع المستوى العام بتكلفة منخفضة.',
+      finance:'إعادة تخصيص الموارد من الأنشطة ذات العائد المنخفض للأعلى عائداً.',
+      volunteers:'تفعيل المتطوعين غير المنتظمين بفعاليات قصيرة يرفع نسبة المشاركة.',
+    };
+    if(domainOpps[intel.domain]) swot.opportunities.push({ text:domainOpps[intel.domain], importance:'low' });
+    if(!swot.opportunities.length) swot.opportunities.push({ text:`تعميم ممارسات أفضل العناصر على بقية ${axisLabel} يمثل فرصة رفع الأداء العام بأقل جهد ممكن.`, importance:'low' });
 
     // ===== المخاطر والتهديدات =====
     decision.urgent.slice(0,3).forEach(item=>{
-      swot.threats.push({
-        text:`«${item.category}» في وضع حرج: أداء أقل من المتوسط بانحراف ${fmtNum(Math.abs(item.zScore),1)}σ ويمثل ${fmtNum(item.impactScore,0)}% من السجلات — يتطلب تدخلاً عاجلاً.`,
-        importance:'high',
-      });
+      const below = globalMean>0 ? (globalMean-item.avg)/globalMean*100 : 0;
+      let txt = `«${item.category}» في وضع حرج: أداء أقل من المتوسط بانحراف ${fmtNum(Math.abs(item.zScore),1)}σ`;
+      if(Math.abs(below)>10) txt += ` (${fmtNum(below,0)}% دون المستوى)`;
+      if(item.impactScore >= 15) txt += `، ويمثل ${fmtNum(item.impactScore,0)}% من السجلات`;
+      txt += `. التأخر في المعالجة يُضاعف الفجوة ويُصعّب الاستعادة.`;
+      swot.threats.push({ text:txt, importance:'high' });
     });
+
     if(forecast){
       const badTrend = inverse ? forecast.trendDirection==='تصاعدي' : forecast.trendDirection==='تنازلي';
-      if(badTrend) swot.threats.push({ text:`المؤشر «${metricLabel}» يُظهر اتجاهاً تنازلياً مقلقاً يستدعي المتابعة الحثيثة خلال الفترة القادمة.`, importance:'high' });
+      if(badTrend) swot.threats.push({
+        text:`«${metricLabel}» يتراجع باستمرار — الاستمرار دون تصحيح يُوصل المستوى لحدود غير مقبولة خلال الفترات القادمة.`,
+        importance:'high'
+      });
     }
-    const cv = decision.mean ? Math.abs(decision.std/decision.mean) : 0;
-    if(cv > 0.4 && aggregates.length >= 3){
-      swot.threats.push({ text:`تذبذب كبير في الأداء بين عناصر ${axisLabel} (معامل تباين ${fmtNum(cv,2)}) — قد يشير إلى عدم استقرار في الجودة أو التطبيق.`, importance:'medium' });
+
+    if(intel.profile.spread === 'polarized' && aggregates.length >= 3){
+      const cv = decision.mean ? Math.abs(decision.std/decision.mean) : 0;
+      swot.threats.push({ text:`تذبذب حاد في الأداء (معامل تباين ${fmtNum(cv,2)}) قد يُشير لغياب معايير موحدة أو تفاوت في الدعم — الأداء غير المتسق أصعب قياساً وتحسيناً من الأداء المنخفض بشكل موحد.`, importance:'medium' });
     }
-    if(!swot.threats.length){
-      swot.threats.push({ text:`لا توجد مخاطر حرجة ظاهرة حالياً — يُنصح بالمتابعة الدورية لرصد أي تغير مفاجئ.`, importance:'low' });
-    }
+
+    if(!swot.threats.length) swot.threats.push({ text:`لا توجد مخاطر حرجة ظاهرة حالياً — لكن غياب المخاطر الظاهرة لا يعني انعدامها، المتابعة الاستباقية تمنع المفاجآت.`, importance:'low' });
 
     const order = {high:0, medium:1, low:2};
     Object.keys(swot).forEach(k=>{
-      swot[k].sort((a,b)=> order[a.importance]-order[b.importance]);
+      swot[k].sort((a,b)=>order[a.importance]-order[b.importance]);
       swot[k] = swot[k].slice(0,4);
     });
     return swot;
@@ -3338,8 +3758,24 @@ const ExportEngine = {
 
     // 01 الملخص التنفيذي
     const overview = document.getElementById('prOverview');
+    const intel = a.intelligence;
     if(metricLabel){
-      overview.textContent = `يحتوي هذا التقرير على تحليل تنفيذي لـ ${fmtNum(STATE.cleanRows.length)} سجلاً من بيانات «${App.typeLabel(a.fileType)}»، بالتركيز على مؤشر «${metricLabel}»` + (axisLabel ? ` ومقارنته حسب «${axisLabel}».` : '.') + ` يهدف هذا التقرير إلى تزويد الإدارة برؤية شاملة وقابلة للتنفيذ خلال ثوانٍ من رفع البيانات.`;
+      let ovText = `يحتوي هذا التقرير على تحليل تنفيذي لـ ${fmtNum(STATE.cleanRows.length)} سجلاً`;
+      if(intel && intel.domain !== 'general'){
+        const domainLabels = {hr:'(موارد بشرية)', education:'(تعليمي)', finance:'(مالي)', volunteers:'(متطوعين)', projects:'(مشاريع)', performance:'(أداء)'};
+        if(domainLabels[intel.domain]) ovText += ` ${domainLabels[intel.domain]}`;
+      }
+      ovText += ` من بيانات «${App.typeLabel(a.fileType)}»، بالتركيز على مؤشر «${metricLabel}»`;
+      ovText += axisLabel ? ` ومقارنته حسب «${axisLabel}».` : '.';
+      if(intel && intel.questions && intel.questions.length){
+        ovText += ` يجيب هذا التقرير على: ${intel.questions.slice(0,2).join(' / ')}.`;
+      } else {
+        ovText += ' يهدف هذا التقرير إلى تزويد الإدارة برؤية شاملة وقابلة للتنفيذ.';
+      }
+      if(intel && intel.risks && intel.risks.length){
+        ovText += ` [تنبيه: ${intel.risks[0].text}]`;
+      }
+      overview.textContent = ovText;
     } else {
       overview.textContent = `يحتوي هذا التقرير على ${fmtNum(STATE.cleanRows.length)} سجلاً ضمن ${STATE.headers.length} عمودًا من البيانات المرفوعة.`;
     }
@@ -3403,6 +3839,28 @@ const ExportEngine = {
       shortlistSection.style.display = 'none';
     }
 
+    // 04.5 رؤى Claude AI (إذا توفرت)
+    const aiSection = document.getElementById('prAiSection');
+    if(a.aiInsights){
+      aiSection.style.display = '';
+      document.getElementById('prAiSummary').textContent = a.aiInsights.executiveSummary || '';
+      const blocks = [
+        { title:'الرؤى التنفيذية', items: a.aiInsights.keyInsights||[] },
+        { title:'القرارات العاجلة', items: a.aiInsights.urgentDecisions||[] },
+        { title:'الفرص', items: a.aiInsights.opportunities||[] },
+        { title:'المخاطر', items: a.aiInsights.risks||[] },
+        { title:'الإجراءات الفورية', items: a.aiInsights.immediateActions||[] },
+      ].filter(b=>b.items.length);
+      document.getElementById('prAiInsights').innerHTML = blocks.map(b=>
+        `<div class="pr-ai-section"><h4>${escapeHtml(b.title)}</h4><ul>${b.items.map(i=>`<li>${escapeHtml(i)}</li>`).join('')}</ul></div>`
+      ).join('');
+      if(a.aiInsights.strategicNote){
+        document.getElementById('prAiInsights').innerHTML += `<p style="font-size:12px;font-style:italic;color:#1F4D4D;margin-top:10px;line-height:2">💡 ${escapeHtml(a.aiInsights.strategicNote)}</p>`;
+      }
+    } else {
+      aiSection.style.display = 'none';
+    }
+
     // 05 التوصيات
     const tbody = document.querySelector('#prDecisionTable tbody');
     const allDec = [...(a.decision?.urgent||[]).map(x=>({...x,cls:tierLabel(a.fileType,'urgent')})),
@@ -3438,53 +3896,22 @@ const ExportEngine = {
   },
 
   async exportPDF(){
+    if(!STATE.analysis){ showToast('يرجى تحليل ملف أولاً'); return; }
     this.fillPrintReport();
     await this.fillChartsSection();
-    const cover = document.getElementById('print-cover');
-    const body = document.getElementById('print-report');
-    cover.style.left = '0px'; cover.style.top = '-99999px';
-    body.style.left = '0px'; body.style.top = '-199999px';
-    try{
-      // ننتظر تحميل الخطوط فعلياً قبل الالتقاط لمنع تداخل الحروف العربية
-      if(document.fonts && document.fonts.ready){ await document.fonts.ready; }
-      await new Promise(r=>setTimeout(r,150));
-      // foreignObjectRendering يجعل المتصفح نفسه يرسم النص (تشكيل عربي صحيح)
-      // بدلاً من محرك html2canvas الداخلي الذي لا يدعم تشكيل الحروف العربية جيداً
-      const { jsPDF } = window.jspdf;
-      const pdf = new jsPDF('p','mm','a4');
-      const pageW = pdf.internal.pageSize.getWidth();
-      const pageH = pdf.internal.pageSize.getHeight();
-
-      // صفحة الغلاف كصفحة PDF مستقلة أولى
-      const coverCanvas = await html2canvas(cover, {scale:2, backgroundColor:'#241C30', useCORS:true, foreignObjectRendering:true});
-      const coverData = coverCanvas.toDataURL('image/jpeg', 0.95);
-      pdf.addImage(coverData, 'JPEG', 0, 0, pageW, pageH);
-
-      // محتوى التقرير على صفحة/صفحات تالية
-      const canvas = await html2canvas(body, {scale:2, backgroundColor:'#ffffff', useCORS:true, foreignObjectRendering:true});
-      const imgW = pageW;
-      const imgH = canvas.height * imgW / canvas.width;
-      let heightLeft = imgH;
-      let position = 0;
-      const imgData = canvas.toDataURL('image/jpeg', 0.95);
-      pdf.addPage();
-      pdf.addImage(imgData, 'JPEG', 0, position, imgW, imgH);
-      heightLeft -= pageH;
-      while(heightLeft > 0){
-        position = heightLeft - imgH;
-        pdf.addPage();
-        pdf.addImage(imgData, 'JPEG', 0, position, imgW, imgH);
-        heightLeft -= pageH;
-      }
-      pdf.save('تقرير-تنفيذي-متقنون.pdf');
-      showToast('تم تنزيل التقرير التنفيذي بصيغة PDF');
-    }catch(err){
-      console.error(err);
-      showToast('تعذر إنشاء PDF، جرّب الطباعة السريعة بدلاً من ذلك (نتيجتها مضمونة 100%)');
-    } finally {
-      cover.style.left = '-9999px'; cover.style.top='0px';
-      body.style.left = '-9999px'; body.style.top='0px';
-    }
+    // انتظر لتحميل الصور والخطوط قبل الطباعة
+    if(document.fonts && document.fonts.ready) await document.fonts.ready;
+    await new Promise(r=>setTimeout(r, 300));
+    // احفظ حالة الثيم ثم أجبر الوضع النهاري لضمان خلفية بيضاء في الـ PDF
+    const wasDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    if(wasDark) document.documentElement.setAttribute('data-theme','light');
+    showToast('جاري تحضير التقرير للطباعة...');
+    await new Promise(r=>setTimeout(r,150));
+    window.print();
+    // أعد الثيم بعد فتح مربع الطباعة
+    setTimeout(()=>{
+      if(wasDark) document.documentElement.setAttribute('data-theme','dark');
+    }, 500);
   },
 
   exportExcel(){
@@ -3556,6 +3983,100 @@ try{
     sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   }
 }catch(err){ console.warn('تعذر تهيئة عميل Supabase:', err); }
+
+/* ============================================================
+   9.3) AI ENHANCER — طبقة الذكاء الاختيارية (Hybrid Architecture)
+   - المنصة تعمل كاملة بدون هذا المحرك (خوارزميات محلية دائماً)
+   - عند توفر مفتاح Claude API يُضاف تحليل أعمق وتوصيات أذكى
+   - المفتاح مخزّن في localStorage للمستخدم فقط، لا يُرسل لأي خادم
+   - إذا تعذّر الاتصال أو انقطع الإنترنت: التحليل المحلي يكمل وحده
+   ============================================================ */
+const AI_KEY_STORAGE = 'bsira_ai_key';
+const AIEnhancer = {
+  _key: null,
+
+  init(){
+    try{ this._key = localStorage.getItem(AI_KEY_STORAGE) || null; }catch(e){ this._key = null; }
+  },
+
+  setKey(k){
+    this._key = k ? k.trim() : null;
+    try{
+      if(this._key) localStorage.setItem(AI_KEY_STORAGE, this._key);
+      else localStorage.removeItem(AI_KEY_STORAGE);
+    }catch(e){}
+  },
+
+  isAvailable(){ return !!(this._key && navigator.onLine !== false); },
+
+  // يبني ملخصاً مكثفاً من نتائج التحليل بدون إرسال البيانات الخام (خصوصية + توفير التوكنات)
+  _buildContext(analysis, fileName, fileType, goals, columnNames){
+    const a = analysis;
+    return {
+      fileName, fileType,
+      goals: (goals||[]).join(' + '),
+      columnNames: (columnNames||[]).slice(0,20),
+      kpis: (a.kpis||[]).slice(0,8).map(k=>({label:k.label, value:k.value, unit:k.unit||''})),
+      decisionSummary:{
+        urgentCount: (a.decision?.urgent||[]).length,
+        urgentItems: (a.decision?.urgent||[]).slice(0,3).map(d=>d.category),
+        interveneCount: (a.decision?.intervene||[]).length,
+        excellentCount: (a.decision?.excellent||[]).length,
+      },
+      swotSnapshot:{
+        strengths: (a.swot?.strengths||[]).slice(0,2).map(s=>s.text),
+        weaknesses: (a.swot?.weaknesses||[]).slice(0,2).map(w=>w.text),
+        opportunities: (a.swot?.opportunities||[]).slice(0,2).map(o=>o.text),
+        threats: (a.swot?.threats||[]).slice(0,2).map(t=>t.text),
+      },
+      discoveries: (a.discoveries||[]).slice(0,4).map(d=>({type:d.type, text:d.text})),
+      topInsights: (a.insights||[]).slice(0,4).map(i=>i.title),
+      rowCount: STATE.cleanRows ? STATE.cleanRows.length : 0,
+    };
+  },
+
+  async enhance(analysis, fileName, fileType, goals, columnNames){
+    if(!this.isAvailable()) return null;
+    const ctx = this._buildContext(analysis, fileName, fileType, goals, columnNames);
+    const prompt = `أنت مستشار تنفيذي خبير في تحليل البيانات المؤسسية. تلقيت نتائج تحليل بيانات من منصة "البصيرة التنفيذية" لجمعية متقنون لتحفيظ القرآن الكريم.
+
+ملخص التحليل المحلي:
+${JSON.stringify(ctx, null, 2)}
+
+مهمتك: استناداً على هذه النتائج، قدّم رؤى تنفيذية عميقة وقرارات مقترحة لا يستطيع التحليل الإحصائي العادي توليدها.
+
+أجب بـ JSON فقط (بدون markdown أو مقدمات) بهذا الشكل:
+{
+  "executiveSummary": "ملخص تنفيذي من جملتين يلتقط الصورة الكاملة",
+  "keyInsights": ["رؤية تنفيذية 1","رؤية 2","رؤية 3"],
+  "urgentDecisions": ["قرار عاجل 1","قرار 2"],
+  "opportunities": ["فرصة 1","فرصة 2"],
+  "risks": ["خطر 1","خطر 2"],
+  "immediateActions": ["إجراء 1","إجراء 2","إجراء 3"],
+  "strategicNote": "ملاحظة استراتيجية واحدة تستحق انتباه الإدارة العليا"
+}`;
+
+    try{
+      const res = await fetch('https://api.anthropic.com/v1/messages',{
+        method:'POST',
+        headers:{'Content-Type':'application/json','x-api-key':this._key,'anthropic-version':'2023-06-01'},
+        body: JSON.stringify({
+          model:'claude-sonnet-4-6', max_tokens:900,
+          messages:[{role:'user', content:prompt}]
+        })
+      });
+      if(!res.ok) throw new Error(`API error ${res.status}`);
+      const data = await res.json();
+      const text = (data.content||[]).map(c=>c.text||'').join('');
+      const clean = text.replace(/```json|```/g,'').trim();
+      return JSON.parse(clean);
+    }catch(err){
+      console.warn('AIEnhancer: تعذر الاتصال بـ Claude API، التحليل المحلي يستمر:', err.message);
+      return null;
+    }
+  },
+};
+AIEnhancer.init();
 
 const SupabaseService = {
   isAvailable(){ return !!sb; },
@@ -4602,6 +5123,28 @@ Object.assign(App, {
     document.getElementById('clearOperationsBtn').addEventListener('click', ()=> this.clearOperations());
     document.getElementById('refreshAdminBtn').addEventListener('click', ()=> this.renderAdminDashboard());
 
+    document.getElementById('saveAiKeyBtn').addEventListener('click', ()=>{
+      const k = (document.getElementById('aiKeyInput').value || '').trim();
+      if(!k || !k.startsWith('sk-')){ showToast('يرجى إدخال مفتاح Claude API صحيح (يبدأ بـ sk-)'); return; }
+      AIEnhancer.setKey(k);
+      document.getElementById('aiKeyInput').value = '';
+      document.getElementById('aiKeyStatus').textContent = '✓ تم حفظ المفتاح — سيُفعَّل التحليل المعزز في التحليل القادم';
+      document.getElementById('aiKeyStatus').style.color = 'var(--c-green)';
+      showToast('تم حفظ مفتاح Claude API ✓');
+    });
+    document.getElementById('clearAiKeyBtn').addEventListener('click', ()=>{
+      AIEnhancer.setKey(null);
+      document.getElementById('aiKeyStatus').textContent = 'تم حذف المفتاح — المنصة تعمل بالتحليل المحلي فقط';
+      document.getElementById('aiKeyStatus').style.color = 'var(--text-tertiary)';
+      showToast('تم حذف مفتاح Claude API');
+    });
+    // اعرض حالة المفتاح الحالي
+    const statusEl = document.getElementById('aiKeyStatus');
+    if(statusEl){
+      statusEl.textContent = AIEnhancer.isAvailable() ? '✓ مفتاح Claude API محفوظ ومفعّل' : 'لا يوجد مفتاح — التحليل المحلي فقط';
+      statusEl.style.color = AIEnhancer.isAvailable() ? 'var(--c-green)' : 'var(--text-tertiary)';
+    }
+
     document.getElementById('exportPdfBtn').addEventListener('click', ()=> ExportEngine.exportPDF());
     document.getElementById('exportExcelBtn').addEventListener('click', ()=> ExportEngine.exportExcel());
     document.getElementById('quickPrintBtn').addEventListener('click', ()=> ExportEngine.quickPrint());
@@ -4676,10 +5219,18 @@ Object.assign(App, {
   // من STATE.cleanRows/columns الحاليين — مشتركة بين أول تحليل لملف جديد وبين استرجاع
   // عملية سابقة بالكامل من السجل المحلي (لذلك لا تُكرَّر المنطق ولا يحدث تعارض بينهما)
   rebuildAnalysisFromState(preferredAxisName){
-    const finalType = STATE.overriddenType || (STATE.detectedType ? STATE.detectedType.key : 'general');
+    // المرحلة 1: الكشف الأولي من القوالب (يبقى كمُعرِّف للقوالب الخاصة كالمتطوعين والمرشحين)
+    const templateType = STATE.overriddenType || (STATE.detectedType ? STATE.detectedType.key : 'general');
 
-    // وحدة تحليل المتطوعين الذكي: تُضيف عمود "مؤشر التطوع الذكي" تلقائياً
-    // عند اكتشاف ملف متطوعين، ليتدفق بعدها عبر كل محركات التحليل القائمة
+    // المرحلة 2: اشتقاق المجال الفعّال — المحتوى يتقدم على القوالب عند الغموض
+    // إذا لم يكتشف القالب شيئاً محدداً (general) يصبح المجال المشتق من DataIntelligence هو المرجع
+    // إذا طابق قالباً معروفاً (volunteers/candidates/halaqat...) يُحتفظ به لأنه يحمل منطقاً إضافياً
+    const TEMPLATE_SPECIFIC = new Set(['volunteers','candidates','halaqat','employees','donations','projects','education']);
+    const isTemplateSpecific = TEMPLATE_SPECIFIC.has(templateType);
+    // finalType = القالب إن كان محدداً، وإلا يُحسب لاحقاً من DataIntelligence
+    let finalType = templateType;
+
+    // وحدة تحليل المتطوعين الذكي
     if(finalType === 'volunteers' && !STATE.headers.includes(VOLUNTEER_SCORE_COL)){
       const vResult = VolunteerScoreEngine.compute(STATE.cleanRows, STATE.columns);
       if(vResult.applied){
@@ -4699,7 +5250,22 @@ Object.assign(App, {
     STATE.primaryTime = picks.primaryTime;
     STATE.primaryStatus = picks.primaryStatus;
 
-    const kpis = AnalysisEngine.computeKPIs(STATE.cleanRows, STATE.columns, picks);
+    // ===== التفكير قبل التحليل: DataIntelligence يفهم السياق من المحتوى الفعلي =====
+    const intelligence = DataIntelligence.analyze(STATE.cleanRows, STATE.columns, picks, finalType);
+
+    // إذا كان القالب عاماً (general)، اجعل المجال المشتق من DataIntelligence يقود السلوك
+    // القوالب المحددة (volunteers/candidates/halaqat...) تحتفظ بمنطقها الخاص
+    if(!isTemplateSpecific && intelligence.domain !== 'general'){
+      // نُحدّث finalType لتحسين صياغة مركز القرار والرؤى والـ SWOT
+      // لكن لا نكسر آلية الكشف أو أي عمليات تعتمد على النوع الأصلي
+      const domainToType = {
+        finance:'donations', hr:'employees', education:'halaqat',
+        performance:'employees', operations:'projects',
+      };
+      if(domainToType[intelligence.domain]) finalType = domainToType[intelligence.domain];
+    }
+
+    const kpis = AnalysisEngine.computeSmartKPIs(STATE.cleanRows, STATE.columns, picks, intelligence);
     const forecast = (picks.primaryMetric && picks.primaryTime) ? ForecastEngine.buildSeries(STATE.cleanRows, picks.primaryMetric.name, picks.primaryTime.name) : null;
     const discoveries = PatternDiscoveryEngine.generate(STATE.cleanRows, STATE.columns, picks);
 
@@ -4712,10 +5278,8 @@ Object.assign(App, {
       });
     }
 
-    STATE.analysis = {fileType:finalType, picks, kpis, baseKpis:kpis, forecast, statusCounts, discoveries, aggregates:[], decision:null, insights:[], alerts:[], swot:null};
+    STATE.analysis = {fileType:finalType, picks, kpis, baseKpis:kpis, forecast, statusCounts, discoveries, intelligence, aggregates:[], decision:null, insights:[], alerts:[], swot:null};
 
-    // لوحة الترشيح الوظيفي: تعمل فقط لقالب فرز المرشحين — تحافظ على اختيار سابق (وظيفة/عدد)
-    // عند الاسترجاع من السجل، وتختار قيماً افتراضية فقط عند تحليل جديد
     if(finalType === 'candidates'){
       const jobTitleCol = CandidateShortlistEngine.findJobTitleColumn(STATE.columns);
       const jobTitles = CandidateShortlistEngine.getJobTitles(STATE.cleanRows, jobTitleCol);
@@ -4730,9 +5294,16 @@ Object.assign(App, {
     this.renderRawTable('');
     this.renderDiscoveries();
     this.renderCandidateShortlist();
+    this.renderIntelligencePanel();
 
     this.updateGoalPillText();
     document.getElementById('lastAnalyzedAt').textContent = 'آخر تحليل: ' + new Date().toLocaleString('ar-SA');
+    const badge = document.getElementById('intelligenceBadge');
+    if(badge && intelligence){
+      const domainEmoji = {hr:'👥', education:'📚', finance:'💰', volunteers:'🤝', projects:'📋', performance:'📈', operations:'⚙️', general:'📊'};
+      badge.textContent = `${domainEmoji[intelligence.domain]||'📊'} ${intelligence.context}`;
+      badge.style.display = '';
+    }
 
     this.goTo('dashboard');
     this.computeAnalysisForAxis(preferredAxisName || (picks.primaryCategory ? picks.primaryCategory.name : null));
@@ -4753,9 +5324,10 @@ Object.assign(App, {
       : (picks.primaryMetric ? AnalysisEngine.buildAggregates(STATE.cleanRows, picks.primaryMetric.name, null) : []);
 
     const decision = AnalysisEngine.buildDecisionCenter(aggregates, picks.primaryMetric ? picks.primaryMetric.name : 'المؤشر', picks.primaryMetric ? picks.primaryMetric.inverse : false, a.fileType);
-    const insights = AnalysisEngine.buildInsights(STATE.cleanRows, STATE.columns, picks, aggregates, decision);
+    const intelligence = a.intelligence || null;
+    const insights = AnalysisEngine.buildInsights(STATE.cleanRows, STATE.columns, picks, aggregates, decision, intelligence);
     const alerts = AlertEngine.build(decision);
-    const swot = SWOTEngine.generate(STATE.cleanRows, picks, aggregates, decision, a.forecast);
+    const swot = SWOTEngine.generate(STATE.cleanRows, picks, aggregates, decision, a.forecast, intelligence);
     const axisKpis = AnalysisEngine.computeAxisKPIs(aggregates, picks, a.forecast);
 
     a.aggregates = aggregates;
@@ -4772,11 +5344,52 @@ Object.assign(App, {
     this.renderSWOT();
     this.reorderSwotQuadrants();
     this.updateAlertBadge();
+    this.renderIntelligencePanel();
 
     const activeView = document.querySelector('.view.active');
     const viewName = activeView ? activeView.id.replace('view-','') : null;
     this.refreshVisibleCharts(viewName);
     this.updateCurrentOperationSnapshot();
+
+    // تعزيز ذكاء اختياري: يُطلق في الخلفية ولا يعيق أي وظيفة
+    if(AIEnhancer.isAvailable()) this._runAIEnhancement();
+  },
+
+  // يُشغَّل في الخلفية بعد اكتمال التحليل المحلي — المنصة تعمل كاملة بدونه
+  async _runAIEnhancement(){
+    const a = STATE.analysis;
+    if(!a) return;
+    const section = document.getElementById('aiInsightsSection');
+    const statusEl = document.getElementById('aiStatusText');
+    if(!section) return;
+    section.style.display = '';
+    if(statusEl) statusEl.textContent = 'جاري تعزيز التحليل بـ Claude AI...';
+    document.getElementById('aiInsightsGrid').innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/></svg><h4>جاري التحليل المعزز...</h4><p>يحلل Claude AI بياناتك لاستخراج رؤى تنفيذية أعمق</p></div>';
+    const result = await AIEnhancer.enhance(
+      a, STATE.fileName || '—', a.fileType, STATE.selectedGoals, STATE.headers || []
+    );
+    if(result){
+      if(statusEl) statusEl.textContent = 'رؤى مُولَّدة بواسطة Claude AI بناءً على نتائج التحليل الفعلي';
+      a.aiInsights = result;
+      this.renderAIInsights(result);
+    } else {
+      section.style.display = 'none';
+    }
+  },
+
+  renderAIInsights(ai){
+    const grid = document.getElementById('aiInsightsGrid');
+    if(!grid || !ai) return;
+    const cardsHtml = [
+      ai.executiveSummary ? `<div class="ai-executive-summary" style="grid-column:1/-1"><div class="ai-badge">✨ الملخص التنفيذي</div><p>${escapeHtml(ai.executiveSummary)}</p></div>` : '',
+      ...( (ai.keyInsights||[]).map(t=>`<div class="glass-card ai-card"><h5>رؤية تنفيذية</h5><p>${escapeHtml(t)}</p></div>`) ),
+      ...( (ai.urgentDecisions||[]).map(t=>`<div class="glass-card ai-card ai-card--urgent"><h5>⚡ قرار عاجل</h5><p>${escapeHtml(t)}</p></div>`) ),
+      ...( (ai.opportunities||[]).map(t=>`<div class="glass-card ai-card ai-card--opportunity"><h5>🌱 فرصة</h5><p>${escapeHtml(t)}</p></div>`) ),
+      ...( (ai.risks||[]).map(t=>`<div class="glass-card ai-card ai-card--risk"><h5>⚠️ مخاطرة</h5><p>${escapeHtml(t)}</p></div>`) ),
+      ...( (ai.immediateActions||[]).map(t=>`<div class="glass-card ai-card"><h5>✅ إجراء فوري</h5><p>${escapeHtml(t)}</p></div>`) ),
+      ai.strategicNote ? `<div class="ai-strategic-note" style="grid-column:1/-1">💡 <b>ملاحظة استراتيجية:</b> ${escapeHtml(ai.strategicNote)}</div>` : '',
+    ].filter(Boolean);
+    grid.innerHTML = `<div class="ai-insights-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin-bottom:8px">${cardsHtml.join('')}</div>`;
   },
 
   renderAxisChips(){
@@ -4840,6 +5453,26 @@ Object.assign(App, {
         <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${icons[d.icon]||icons.compass}</svg></div>
         <div><h5>${escapeHtml(d.title)}</h5><p>${escapeHtml(d.text)}</p></div>
       </div>`).join('');
+  },
+
+  renderIntelligencePanel(){
+    const panel = document.getElementById('intelligencePanel');
+    const riskBar = document.getElementById('intelligenceRiskBar');
+    const questionsEl = document.getElementById('intelligenceQuestions');
+    if(!panel || !riskBar || !questionsEl) return;
+    const intel = STATE.analysis && STATE.analysis.intelligence;
+    if(!intel || (!intel.questions.length && !intel.risks.length)){
+      panel.style.display = 'none'; return;
+    }
+    panel.style.display = '';
+    if(intel.risks.length && intel.risks[0].level==='high'){
+      riskBar.style.display=''; riskBar.style.background='var(--c-amber-bg)'; riskBar.style.borderColor='var(--c-amber)';
+      riskBar.innerHTML = '⚠️ <b>تنبيه مبكر:</b> ' + escapeHtml(intel.risks[0].text);
+    } else if(intel.risks.length && intel.risks[0].level==='medium'){
+      riskBar.style.display=''; riskBar.style.background='var(--bg-sunken)'; riskBar.style.borderColor='var(--border-default)';
+      riskBar.innerHTML = 'ℹ️ ' + escapeHtml(intel.risks[0].text);
+    } else { riskBar.style.display='none'; }
+    questionsEl.innerHTML = intel.questions.map(q=>`<span class="intel-question-pill">❓ ${escapeHtml(q)}</span>`).join('');
   },
 
   renderCandidateShortlist(){
